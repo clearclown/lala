@@ -1,19 +1,22 @@
-mod app;
-mod core;
+use eframe::egui;
+
+mod core_engine;
+mod file_tree;
 mod gui;
+mod search;
 
-use app::LalaApp;
+use gui::LalaApp;
 
-fn main() -> eframe::Result<()> {
+fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1024.0, 768.0])
-            .with_title("Lala Editor"),
+            .with_inner_size([1280.0, 720.0])
+            .with_title("Lala - Advanced Text Editor"),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Lala Editor",
+        "lala",
         options,
         Box::new(|cc| Ok(Box::new(LalaApp::new(cc)))),
     )

@@ -1,0 +1,9 @@
+[package]
+name = "core-cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+gui-base = { path = "../gui-base" }
+clap = { version = "4.4", features = ["derive"] }
+anyhow.workspace = true

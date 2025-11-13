@@ -1,12 +1,38 @@
-[package]
-name = "lala"
+[workspace]
+members = ["core-cli", "gui-base"]
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
+[workspace.dependencies]
+# GUI framework
 eframe = "0.29"
 egui = "0.29"
-syntect = "5.2"
+
+# Text rope for efficient text editing
 ropey = "1.6"
 
-[dev-dependencies]
+# Regular expressions
+regex = "1.11"
+
+# Async runtime
+tokio = { version = "1.42", features = ["full"] }
+
+# Fast file walking with .gitignore support
+ignore = "0.4"
+walkdir = "2.4"
+
+# Channel for async communication
+flume = "0.11"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "2.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# Dev dependencies
+tempfile = "3.14"
