@@ -1,5 +1,12 @@
-//! # lala - 軽量で高速なテキストエディタ
+//! # Lala - Modern Text Editor
 //!
-//! lalaは、Rustで書かれた軽量で高速なテキストエディタです。
+//! A lightweight and fast text editor written in Rust with egui.
 
 pub mod cli;
+pub mod core;
+pub mod core_engine;
+pub mod file_tree;
+pub mod gui;
+pub mod search;
+
+pub use gui::LalaApp;

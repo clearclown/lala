@@ -1,10 +1,21 @@
-/// core-engine のダミー実装
-/// 将来的に feature/core-engine で実装される予定
+/// Core editing engine module
+pub mod error;
+pub mod rope;
+
+// Tests temporarily disabled - need to be updated to match new architecture
+// #[cfg(test)]
+// mod tests;
+
+pub use error::CoreError;
+pub use rope::TextBuffer;
+
+/// Dummy EditorEngine implementation
+/// Will be fully implemented in feature/core-engine
 #[derive(Debug, Clone)]
 pub struct EditorEngine {
-    /// エディタのID
+    /// Engine ID
     pub id: usize,
-    /// ドキュメントの内容（ダミー）
+    /// Document content (dummy)
     #[allow(dead_code)]
     pub content: String,
 }

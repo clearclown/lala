@@ -1,12 +1,14 @@
-[workspace]
-members = ["core-cli", "gui-base"]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "lala"
 version = "0.1.0"
 edition = "2021"
+authors = ["lala contributors"]
 
-[workspace.dependencies]
+[[bin]]
+name = "lala"
+path = "src/main.rs"
+
+[dependencies]
 # GUI framework
 eframe = "0.29"
 egui = "0.29"
@@ -31,8 +33,26 @@ flume = "0.11"
 anyhow = "1.0"
 thiserror = "2.0"
 
-# Serialization
+# Serialization (for settings, etc.)
 serde = { version = "1.0", features = ["derive"] }
 
-# Dev dependencies
+# Command line argument parsing
+clap = { version = "4.4", features = ["derive"] }
+
+# Logging
+env_logger = "0.11"
+log = "0.4"
+
+# Syntax highlighting
+syntect = "5.2"
+
+# Markdown parsing
+pulldown-cmark = "0.12"
+
+[dev-dependencies]
 tempfile = "3.14"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

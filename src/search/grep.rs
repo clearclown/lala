@@ -5,7 +5,7 @@ This module implements asynchronous grep functionality with .gitignore support.
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────┐
 │   GUI Thread    │
 │                 │
@@ -52,7 +52,7 @@ This module implements asynchronous grep functionality with .gitignore support.
 
 ## Usage
 
-```rust
+```rust,ignore
 use lala::search::grep::{GrepEngine, GrepOptions};
 
 let mut engine = GrepEngine::new();
@@ -61,6 +61,7 @@ let options = GrepOptions {
     case_sensitive: false,
     use_regex: false,
     root_path: "/path/to/project".into(),
+    file_filter: None,
 };
 
 // Start async search
