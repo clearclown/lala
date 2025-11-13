@@ -1,6 +1,8 @@
 # Lala Editor
 
-A modern, lightweight text editor with a graphical user interface built with Rust, egui, and eframe.
+A modern, lightweight text editor with **both GUI and CLI** built with Rust, egui, and eframe.
+
+**NEW**: Now with comprehensive command-line interface! View Markdown with beautiful formatting, file viewing with line numbers, and more - all from your terminal.
 
 ## Features
 
@@ -127,13 +129,36 @@ cargo build --release
 ```
 
 ### Run
+
+#### GUI Mode (Default)
 ```bash
 # Run in development mode
 cargo run
 
 # Run release build
 ./target/release/lala
+
+# Open specific file or directory
+./target/release/lala file.txt
+./target/release/lala /path/to/project
 ```
+
+#### CLI Mode (NEW!)
+```bash
+# Preview Markdown with beautiful formatting
+./target/release/lala markdown README.md
+
+# View file with line numbers
+./target/release/lala view -n src/main.rs
+
+# See all available commands
+./target/release/lala --help
+
+# Get help for specific command
+./target/release/lala markdown --help
+```
+
+**See `CLI_USAGE.md` for complete CLI documentation with examples.**
 
 ### Test
 ```bash
@@ -171,24 +196,43 @@ Core dependencies:
 - **thiserror**: Error type derivation
 - **serde**: Serialization support
 - **clap**: Command-line argument parsing
+- **colored**: Terminal colors and formatting
+- **terminal_size**: Terminal size detection
 
 ## Keyboard Shortcuts
 
-### Editor
+### Editor (GUI Mode)
 - **Ctrl+S**: Save file
 - **Ctrl+Z**: Undo (planned)
 - **Ctrl+Y** or **Ctrl+Shift+Z**: Redo (planned)
 
-### Navigation
+### Navigation (GUI Mode)
 - **Arrow Keys**: Move cursor
 - **Page Up/Down**: Scroll
 - **Home/End**: Jump to line start/end
 
-### Text Editing
+### Text Editing (GUI Mode)
 - **Backspace**: Delete character before cursor
 - **Delete**: Delete character at cursor
 - **Enter**: Insert newline
 - **Tab**: Insert tab/spaces
+
+## CLI Commands
+
+```bash
+# Markdown preview
+lala markdown <FILE> [--no-color]
+
+# File viewing
+lala view <FILE> [-n|--line-numbers]
+
+# Help
+lala --help
+lala markdown --help
+lala view --help
+```
+
+**For detailed CLI usage, examples, and tips, see `CLI_USAGE.md`.**
 
 ## Development
 
