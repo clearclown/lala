@@ -4,8 +4,7 @@ A modern text editor with a graphical user interface built with Rust, egui, and 
 
 ## Features
 
-### ✨ File Tree View (feature/file-tree)
-
+### ✨ File Tree View
 - **Tree Display**: Browse directories and files in a hierarchical tree view in the left sidebar
 - **Directory Expansion**: Click the folder icon to expand/collapse directories
 - **File Opening**: Click on files to open them in editor tabs
@@ -17,8 +16,25 @@ A modern text editor with a graphical user interface built with Rust, egui, and 
 - **Error Handling**: Displays access denied messages for restricted directories
 - **Performance**: Optimized for large directories (like `node_modules`)
 
-### 📝 Editor Features
+### 📝 Basic Text Editing
+- **Text Display**: Efficiently displays text from Rope buffer in GUI
+- **Text Input**: Full keyboard input support (characters, backspace, enter, delete)
+- **Cursor Synchronization**: Bidirectional sync between GUI and core engine
+- **Undo/Redo**: Full undo/redo support with keyboard shortcuts
+  - Ctrl+Z: Undo
+  - Ctrl+Y or Ctrl+Shift+Z: Redo
+- **Save Functionality**: Async file saving with keyboard shortcut
+  - Ctrl+S: Save file
+- **Unsaved Changes Indicator**: Shows `*` in status bar when file is modified
+- **Status Bar**: Displays file name, cursor position, and character count
 
+### 🔍 Advanced Search and Replace
+- **Grep Integration**: Fast file-wide search using ripgrep
+- **Multi-file Search**: Search across multiple files in directories
+- **Replace Functionality**: Find and replace text in files
+- **Regex Support**: Full regular expression support for advanced patterns
+
+### 🎨 Editor Features
 - **Multi-tab Editing**: Open multiple files simultaneously
 - **Syntax Highlighting**: Code editor with monospace font
 - **File Management**: Save files with modification indicators
@@ -40,6 +56,22 @@ The GUI application built with egui/eframe:
 - `src/lib.rs`: Main application entry point
 - `src/gui/mod.rs`: GUI application state and rendering
 - `src/gui/file_tree.rs`: File tree component with async loading
+
+### Core Components
+
+#### Text Buffer
+The core editing engine uses a Rope-based text buffer for efficient editing:
+- Supports efficient insert/delete operations
+- Character-indexed operations
+- Line-based operations
+
+#### Text Synchronization Strategy
+The editor uses an efficient synchronization approach:
+1. Convert Rope to String for display in egui's TextEdit
+2. Detect changes after user input
+3. Calculate diff between old and new text
+4. Send changes to core engine via insert_char/delete_range APIs
+5. Synchronize cursor position bidirectionally
 
 ## Building and Running
 
@@ -78,39 +110,37 @@ cargo clippy --all-targets --all-features
 ## Implementation Details
 
 ### Async Directory Loading
-
 The file tree uses async I/O to prevent UI freezes:
-
 1. **Background Thread**: Directory scanning happens in a separate thread using `tokio::spawn`
 2. **Channel Communication**: Results are sent to the GUI thread via `flume` channels
 3. **Incremental Updates**: The tree updates as directories are scanned
 4. **Depth Limiting**: Initial load is limited to 3 levels deep for performance
 
 ### Security Considerations
-
 - **Symlink Handling**: Symbolic links are not followed to prevent infinite loops and security issues
 - **Permission Errors**: Access denied errors are caught and displayed in the tree
 
-### Dependencies
+## Dependencies
 
 Core dependencies:
 - `eframe` / `egui`: GUI framework
+- `ropey`: Rope data structure for efficient text editing
 - `tokio`: Async runtime
 - `ignore`: Git-aware file walking (respects .gitignore)
 - `flume`: Fast multi-producer multi-consumer channels
 - `anyhow`: Error handling
+- `thiserror`: Error type derivation
+- `regex`: Regular expressions
+- `serde`: Serialization
 
-## Completion Checklist
+## Keyboard Shortcuts
 
-- [x] cargo test passes all tests
-- [x] cargo clippy has no lint errors
-- [x] File tree displays in left sidebar
-- [x] Folder expansion/collapse works
-- [x] Files open in editor tabs when clicked
-- [x] Async loading prevents UI freezes
-- [x] Error handling for permission issues
-- [x] .git directories filtered out
-- [x] Unit tests for tree logic
+- **Ctrl+Z**: Undo last edit
+- **Ctrl+Y** or **Ctrl+Shift+Z**: Redo
+- **Ctrl+S**: Save file
+- **Backspace**: Delete character before cursor
+- **Delete**: Delete character at cursor
+- **Enter**: Insert newline
 
 ## Future Enhancements
 
@@ -121,3 +151,7 @@ Potential features for future development:
 - Drag and drop support
 - Tree icons for different file types
 - Keyboard navigation
+- Themes and syntax highlighting
+- Configuration system
+- Multiple cursors
+- Split view editing
