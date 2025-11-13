@@ -62,6 +62,8 @@ pub struct History {
     current: usize,
     /// Maximum history size
     max_size: usize,
+    /// Position in history when last saved (None if never saved)
+    saved_position: Option<usize>,
 }
 
 impl History {
@@ -76,6 +78,7 @@ impl History {
             edits: Vec::new(),
             current: 0,
             max_size,
+            saved_position: Some(0), // Start at saved state
         }
     }
 
@@ -83,6 +86,13 @@ impl History {
     pub fn add_edit(&mut self, edit: Edit) {
         // Remove any edits after current position (they were undone)
         self.edits.truncate(self.current);
+
+        // Invalidate saved position if we're branching from it
+        if let Some(saved_pos) = self.saved_position {
+            if saved_pos > self.current {
+                self.saved_position = None;
+            }
+        }
 
         // Add new edit
         self.edits.push(edit);
@@ -92,6 +102,14 @@ impl History {
         if self.edits.len() > self.max_size {
             self.edits.remove(0);
             self.current -= 1;
+            // Adjust saved position
+            if let Some(saved_pos) = self.saved_position {
+                if saved_pos > 0 {
+                    self.saved_position = Some(saved_pos - 1);
+                } else {
+                    self.saved_position = None;
+                }
+            }
         }
     }
 
@@ -131,18 +149,20 @@ impl History {
     pub fn clear(&mut self) {
         self.edits.clear();
         self.current = 0;
+        self.saved_position = Some(0);
     }
 
-    /// Check if the buffer has been modified since creation/last save
+    /// Check if the buffer has been modified since last save
     pub fn is_modified(&self) -> bool {
-        self.current > 0
+        match self.saved_position {
+            Some(saved_pos) => self.current != saved_pos,
+            None => true, // Never saved or saved position invalidated
+        }
     }
 
     /// Mark the current state as saved
     pub fn mark_saved(&mut self) {
-        // In a more sophisticated implementation, we would track the "saved" position
-        // For now, we'll use a simple approach: clear history after save
-        // This means we can't undo past a save point
+        self.saved_position = Some(self.current);
     }
 }
 
@@ -227,5 +247,53 @@ mod tests {
         // Redo
         history.redo(&mut buffer, &mut cursor);
         assert_eq!(buffer.to_string(), "testing");
+    }
+
+    #[test]
+    fn test_is_modified() {
+        let mut buffer = TextBuffer::from_str("hello");
+        let mut cursor = Cursor::at(5);
+        let mut history = History::new();
+
+        // Initially not modified
+        assert!(!history.is_modified());
+
+        // Add an edit - should be modified
+        let edit = Edit::Insert {
+            position: 5,
+            text: " world".to_string(),
+            cursor_before: Cursor::at(5),
+            cursor_after: Cursor::at(11),
+        };
+        edit.apply(&mut buffer, &mut cursor);
+        history.add_edit(edit);
+        assert!(history.is_modified());
+
+        // Mark as saved - should not be modified
+        history.mark_saved();
+        assert!(!history.is_modified());
+
+        // Add another edit - should be modified again
+        let edit2 = Edit::Insert {
+            position: 11,
+            text: "!".to_string(),
+            cursor_before: Cursor::at(11),
+            cursor_after: Cursor::at(12),
+        };
+        edit2.apply(&mut buffer, &mut cursor);
+        history.add_edit(edit2);
+        assert!(history.is_modified());
+
+        // Undo - should not be modified (back to saved state)
+        history.undo(&mut buffer, &mut cursor);
+        assert!(!history.is_modified());
+
+        // Undo again - should be modified (before saved state)
+        history.undo(&mut buffer, &mut cursor);
+        assert!(history.is_modified());
+
+        // Redo - should not be modified (back to saved state)
+        history.redo(&mut buffer, &mut cursor);
+        assert!(!history.is_modified());
     }
 }

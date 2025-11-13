@@ -152,41 +152,11 @@ impl EditorView {
                 self.cached_cursor_pos = new_cursor_pos;
 
                 let editor = self.editor.clone();
-                runtime.spawn(async move {
+                runtime.block_on(async move {
                     let mut ed = editor.lock().await;
                     ed.set_cursor_position(new_cursor_pos);
                 });
             }
-        }
-
-        // Handle keyboard input for special keys
-        let ctx = ui.ctx();
-
-        // Backspace
-        if ctx.input(|i| i.key_pressed(egui::Key::Backspace)) {
-            let editor = self.editor.clone();
-            runtime.spawn(async move {
-                let mut ed = editor.lock().await;
-                ed.delete_before_cursor();
-            });
-        }
-
-        // Delete
-        if ctx.input(|i| i.key_pressed(egui::Key::Delete)) {
-            let editor = self.editor.clone();
-            runtime.spawn(async move {
-                let mut ed = editor.lock().await;
-                ed.delete_at_cursor();
-            });
-        }
-
-        // Enter/Return (insert newline)
-        if ctx.input(|i| i.key_pressed(egui::Key::Enter)) {
-            let editor = self.editor.clone();
-            runtime.spawn(async move {
-                let mut ed = editor.lock().await;
-                ed.insert_char('\n');
-            });
         }
     }
 }

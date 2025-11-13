@@ -87,6 +87,7 @@ impl Editor {
         tokio::fs::write(path, self.buffer.to_string()).await?;
         self.file_path = Some(path.to_path_buf());
         self.modified = false;
+        self.history.mark_saved();
         Ok(())
     }
 
@@ -105,7 +106,7 @@ impl Editor {
 
     /// Check if the editor has unsaved changes
     pub fn is_modified(&self) -> bool {
-        self.modified
+        self.history.is_modified()
     }
 
     /// Get a reference to the text buffer

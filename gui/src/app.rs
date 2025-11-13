@@ -34,10 +34,12 @@ impl LalaApp {
 
     /// Handle keyboard shortcuts
     fn handle_shortcuts(&mut self, ctx: &egui::Context) {
+        let runtime_handle = self.runtime.handle().clone();
+
         // Ctrl+Z: Undo
         if ctx.input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::Z))) {
             let editor = self.editor.clone();
-            self.runtime.spawn(async move {
+            runtime_handle.block_on(async move {
                 let mut ed = editor.lock().await;
                 ed.undo();
             });
@@ -48,7 +50,7 @@ impl LalaApp {
             || ctx.input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(egui::Modifiers::CTRL.plus(egui::Modifiers::SHIFT), egui::Key::Z)))
         {
             let editor = self.editor.clone();
-            self.runtime.spawn(async move {
+            runtime_handle.block_on(async move {
                 let mut ed = editor.lock().await;
                 ed.redo();
             });
@@ -57,13 +59,17 @@ impl LalaApp {
         // Ctrl+S: Save
         if ctx.input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::S))) {
             let editor = self.editor.clone();
-            let runtime_handle = self.runtime.handle().clone();
-
-            runtime_handle.spawn(async move {
+            runtime_handle.block_on(async move {
                 let mut ed = editor.lock().await;
                 match ed.save_file().await {
                     Ok(_) => {
-                        // TODO: Update status message
+                        // Successfully saved
+                    }
+                    Err(core_engine::EditorError::NoFilePath) => {
+                        // Save to default path
+                        if let Err(e) = ed.save_to_file("untitled.txt").await {
+                            eprintln!("Failed to save: {}", e);
+                        }
                     }
                     Err(e) => {
                         eprintln!("Failed to save: {}", e);
@@ -113,7 +119,8 @@ impl eframe::App for LalaApp {
                 ui.menu_button("Edit", |ui| {
                     if ui.button("Undo (Ctrl+Z)").clicked() {
                         let editor = self.editor.clone();
-                        self.runtime.spawn(async move {
+                        let runtime_handle = self.runtime.handle().clone();
+                        runtime_handle.block_on(async move {
                             let mut ed = editor.lock().await;
                             ed.undo();
                         });
@@ -121,7 +128,8 @@ impl eframe::App for LalaApp {
                     }
                     if ui.button("Redo (Ctrl+Y)").clicked() {
                         let editor = self.editor.clone();
-                        self.runtime.spawn(async move {
+                        let runtime_handle = self.runtime.handle().clone();
+                        runtime_handle.block_on(async move {
                             let mut ed = editor.lock().await;
                             ed.redo();
                         });
