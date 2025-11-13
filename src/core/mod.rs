@@ -73,6 +73,7 @@ impl EditorCore {
     ///
     /// let editor = EditorCore::new();
     /// ```
+    #[must_use]
     pub fn new() -> Self {
         Self {
             buffer: Rope::new(),
@@ -90,6 +91,7 @@ impl EditorCore {
     ///
     /// let editor = EditorCore::from_text("Hello, World!");
     /// ```
+    #[must_use]
     pub fn from_text(text: &str) -> Self {
         Self {
             buffer: Rope::from_str(text),
@@ -100,9 +102,9 @@ impl EditorCore {
 
     /// ファイルを非同期で読み込む
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// ファイルが存在しない、または読み込み権限がない場合はエラーを返す
+    /// ファイルが存在しない、または読み込み権限がない場合は`CoreError::IoError`を返す
     pub async fn load_file<P: AsRef<Path>>(&mut self, path: P) -> CoreResult<()> {
         let content = fs::read_to_string(path).await?;
         self.buffer = Rope::from_str(&content);
@@ -114,9 +116,9 @@ impl EditorCore {
 
     /// ファイルに非同期で保存する
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// ファイルへの書き込み権限がない場合はエラーを返す
+    /// ファイルへの書き込み権限がない場合は`CoreError::IoError`を返す
     pub async fn save_file<P: AsRef<Path>>(&self, path: P) -> CoreResult<()> {
         let content = self.buffer.to_string();
         fs::write(path, content).await?;
@@ -130,9 +132,9 @@ impl EditorCore {
     /// * `index` - 挿入位置（文字インデックス）
     /// * `text` - 挿入するテキスト
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// インデックスがバッファの範囲外の場合はエラーを返す
+    /// インデックスがバッファの範囲外の場合は`CoreError::OutOfBounds`を返す
     pub fn insert(&mut self, index: usize, text: &str) -> CoreResult<()> {
         // 範囲チェック
         let buffer_len = self.buffer.len_chars();
@@ -158,9 +160,9 @@ impl EditorCore {
     /// * `start` - 削除開始位置（文字インデックス）
     /// * `end` - 削除終了位置（文字インデックス、この位置は含まれない）
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// インデックスがバッファの範囲外の場合、または start > end の場合はエラーを返す
+    /// インデックスがバッファの範囲外の場合、または start > end の場合は`CoreError::OutOfBounds`を返す
     pub fn delete(&mut self, start: usize, end: usize) -> CoreResult<()> {
         let buffer_len = self.buffer.len_chars();
 
@@ -195,9 +197,9 @@ impl EditorCore {
 
     /// 最後の操作を元に戻す
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// Undo履歴がない場合はエラーを返す
+    /// Undo履歴がない場合は`CoreError::HistoryError`を返す
     pub fn undo(&mut self) -> CoreResult<()> {
         let operation = self.undo_stack.pop().ok_or_else(|| {
             CoreError::HistoryError("Undo履歴がありません".to_string())
@@ -224,9 +226,9 @@ impl EditorCore {
 
     /// Undoした操作をやり直す
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// Redo履歴がない場合はエラーを返す
+    /// Redo履歴がない場合は`CoreError::HistoryError`を返す
     pub fn redo(&mut self) -> CoreResult<()> {
         let operation = self.redo_stack.pop().ok_or_else(|| {
             CoreError::HistoryError("Redo履歴がありません".to_string())
@@ -252,11 +254,13 @@ impl EditorCore {
     }
 
     /// バッファの文字数を取得する
+    #[must_use]
     pub fn len(&self) -> usize {
         self.buffer.len_chars()
     }
 
     /// バッファが空かどうかを判定する
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.buffer.len_chars() == 0
     }
@@ -267,6 +271,7 @@ impl EditorCore {
     ///
     /// 大きなバッファの場合、メモリコピーが発生するため、パフォーマンスに影響する可能性があります。
     /// 可能な限り、このメソッドの使用を避け、イテレータを使用することを推奨します。
+    #[must_use]
     pub fn as_str(&self) -> String {
         self.buffer.to_string()
     }
