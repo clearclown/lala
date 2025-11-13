@@ -1,0 +1,19 @@
+Plain Text Test File
+
+This is a plain text file without any syntax highlighting.
+It should be displayed in a single color without any special formatting.
+
+No matter what we write here:
+- let x = 42;
+- fn main() {}
+- **bold** or *italic*
+- # Headers
+
+None of these should be highlighted because this is plain text.
+
+1234567890
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+!@#$%^&*()_+-=[]{}|;':",./<>?
+
+Just plain text.
