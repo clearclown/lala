@@ -1,0 +1,12 @@
+[package]
+name = "lala"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.29"
+egui = "0.29"
+syntect = "5.2"
+ropey = "1.6"
+
+[dev-dependencies]
