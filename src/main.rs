@@ -1,25 +1,23 @@
-mod core;
+use eframe::egui;
+
+mod core_engine;
+mod file_tree;
 mod gui;
+mod search;
 
-use gui::EditorApp;
+use gui::LalaApp;
 
-fn main() -> eframe::Result {
-    // ロガーの初期化（オプション）
-    env_logger::init();
-
-    // ネイティブウィンドウのオプション設定
-    let native_options = eframe::NativeOptions {
+fn main() -> Result<(), eframe::Error> {
+    let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1024.0, 768.0])
-            .with_min_inner_size([640.0, 480.0])
-            .with_title("Lala Editor"),
+            .with_inner_size([1280.0, 720.0])
+            .with_title("Lala - Advanced Text Editor"),
         ..Default::default()
     };
 
-    // アプリケーションの起動
     eframe::run_native(
-        "Lala Editor",
-        native_options,
-        Box::new(|_cc| Ok(Box::new(EditorApp::new()))),
+        "lala",
+        options,
+        Box::new(|cc| Ok(Box::new(LalaApp::new(cc)))),
     )
 }
