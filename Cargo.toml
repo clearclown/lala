@@ -1,0 +1,22 @@
+[workspace]
+members = ["core-engine", "gui"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["lala contributors"]
+
+[workspace.dependencies]
+# Rope data structure for efficient text editing
+ropey = "1.6"
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+# GUI framework
+eframe = "0.29"
+egui = "0.29"
