@@ -1,144 +1,139 @@
-# Lala - Simple Text Editor
+# Lala Editor
 
-A simple, efficient text editor built with Rust, featuring a modular architecture with a Rope-based text buffer and an egui-based GUI.
+A modern text editor with a graphical user interface built with Rust, egui, and eframe.
 
 ## Features
 
-### Implemented (feature/basic-editing)
+### ✨ File Tree View
+- **Tree Display**: Browse directories and files in a hierarchical tree view in the left sidebar
+- **Directory Expansion**: Click the folder icon to expand/collapse directories
+- **File Opening**: Click on files to open them in editor tabs
+- **Async Loading**: Non-blocking directory scanning prevents UI freezes
+- **Smart Filtering**:
+  - Respects `.gitignore` files (when in a git repository)
+  - Filters out `.git` directories automatically
+  - Does not follow symbolic links (for security)
+- **Error Handling**: Displays access denied messages for restricted directories
+- **Performance**: Optimized for large directories (like `node_modules`)
 
-- ✅ **Text Display**: Efficiently displays text from Rope buffer in GUI
-- ✅ **Text Input**: Full keyboard input support (characters, backspace, enter, delete)
-- ✅ **Cursor Synchronization**: Bidirectional sync between GUI and core engine
-- ✅ **Undo/Redo**: Full undo/redo support with keyboard shortcuts
+### 📝 Basic Text Editing
+- **Text Display**: Efficiently displays text from Rope buffer in GUI
+- **Text Input**: Full keyboard input support (characters, backspace, enter, delete)
+- **Cursor Synchronization**: Bidirectional sync between GUI and core engine
+- **Undo/Redo**: Full undo/redo support with keyboard shortcuts
   - Ctrl+Z: Undo
   - Ctrl+Y or Ctrl+Shift+Z: Redo
-- ✅ **Save Functionality**: Async file saving with keyboard shortcut
+- **Save Functionality**: Async file saving with keyboard shortcut
   - Ctrl+S: Save file
-- ✅ **Unsaved Changes Indicator**: Shows `*` in status bar when file is modified
-- ✅ **Status Bar**: Displays file name, cursor position, and character count
+- **Unsaved Changes Indicator**: Shows `*` in status bar when file is modified
+- **Status Bar**: Displays file name, cursor position, and character count
+
+### 🔍 Advanced Search and Replace
+- **Grep Integration**: Fast file-wide search using ripgrep
+- **Multi-file Search**: Search across multiple files in directories
+- **Replace Functionality**: Find and replace text in files
+- **Regex Support**: Full regular expression support for advanced patterns
+
+### 🎨 Editor Features
+- **Multi-tab Editing**: Open multiple files simultaneously
+- **Syntax Highlighting**: Code editor with monospace font
+- **File Management**: Save files with modification indicators
+- **Tab Management**: Close tabs with the × button
 
 ## Architecture
 
+The project is organized as a Cargo workspace with two main crates:
+
+### `core-cli`
+The command-line interface that launches the application:
+```bash
+lala [PATH]  # Opens the editor with the specified file or directory
+lala .       # Opens current directory
+```
+
+### `gui-base`
+The GUI application built with egui/eframe:
+- `src/lib.rs`: Main application entry point
+- `src/gui/mod.rs`: GUI application state and rendering
+- `src/gui/file_tree.rs`: File tree component with async loading
+
 ### Core Components
 
-#### core-engine (Crate)
+#### Text Buffer
+The core editing engine uses a Rope-based text buffer for efficient editing:
+- Supports efficient insert/delete operations
+- Character-indexed operations
+- Line-based operations
 
-The core editing engine, independent of any GUI framework:
-
-- **TextBuffer** (`buffer.rs`): Rope-based text buffer for efficient editing
-  - Supports efficient insert/delete operations
-  - Character-indexed operations
-  - Line-based operations
-
-- **Cursor** (`cursor.rs`): Cursor position management
-  - Forward/backward movement
-  - Auto-adjustment after edits
-
-- **History** (`history.rs`): Undo/Redo system
-  - Edit history tracking
-  - Configurable history size (default: 1000 operations)
-
-- **Editor** (`editor.rs`): Main editor state
-  - Integrates buffer, cursor, and history
-  - Async file I/O
-  - Change tracking
-
-#### gui (Crate)
-
-The GUI application built with egui:
-
-- **LalaApp** (`app.rs`): Main application state
-  - Menu bar (File, Edit)
-  - Status bar
-  - Keyboard shortcut handling
-  - Async runtime for file operations
-
-- **EditorView** (`editor_view.rs`): Editor view component
-  - Text synchronization between egui and core-engine
-  - Implements "方針A" (Approach A): Rope to String conversion
-  - Change detection and propagation to core-engine
-
-## Text Synchronization Strategy
-
-The editor uses **Approach A** (方針A) for text synchronization:
-
+#### Text Synchronization Strategy
+The editor uses an efficient synchronization approach:
 1. Convert Rope to String for display in egui's TextEdit
 2. Detect changes after user input
 3. Calculate diff between old and new text
-4. Send changes to core-engine via insert_char/delete_range APIs
+4. Send changes to core engine via insert_char/delete_range APIs
 5. Synchronize cursor position bidirectionally
-
-This approach is simple and reliable, though it may have performance limitations with very large files. If needed, the implementation can be migrated to **Approach B** (方針B), which uses egui's LayoutJob/Galley APIs for direct Rope rendering.
 
 ## Building and Running
 
 ### Prerequisites
-
 - Rust 1.70 or later
 - Cargo
 
 ### Build
-
 ```bash
-# Debug build
-cargo build
-
-# Release build
 cargo build --release
 ```
 
 ### Run
-
 ```bash
-# Run in debug mode
-cargo run
+# Run in development mode
+cargo run -- .
 
-# Run in release mode
-cargo run --release
+# Or run the binary directly
+./target/release/lala .
 ```
 
 ### Test
-
 ```bash
 # Run all tests
 cargo test
 
-# Run tests for core-engine only
-cargo test --package core-engine
+# Run with output
+cargo test -- --nocapture
 ```
 
 ### Lint
-
 ```bash
-# Run clippy
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --all-targets --all-features
 ```
 
-## Project Structure
+## Implementation Details
 
-```
-lala/
-├── Cargo.toml          # Workspace configuration
-├── README.md           # This file
-├── core-engine/        # Core editing engine
-│   ├── Cargo.toml
-│   └── src/
-│       ├── lib.rs      # Module exports
-│       ├── buffer.rs   # Rope-based text buffer
-│       ├── cursor.rs   # Cursor management
-│       ├── history.rs  # Undo/Redo system
-│       └── editor.rs   # Main editor state
-└── gui/                # GUI application
-    ├── Cargo.toml
-    └── src/
-        ├── main.rs         # Entry point
-        ├── app.rs          # Application state
-        └── editor_view.rs  # Editor view component
-```
+### Async Directory Loading
+The file tree uses async I/O to prevent UI freezes:
+1. **Background Thread**: Directory scanning happens in a separate thread using `tokio::spawn`
+2. **Channel Communication**: Results are sent to the GUI thread via `flume` channels
+3. **Incremental Updates**: The tree updates as directories are scanned
+4. **Depth Limiting**: Initial load is limited to 3 levels deep for performance
 
-## Usage
+### Security Considerations
+- **Symlink Handling**: Symbolic links are not followed to prevent infinite loops and security issues
+- **Permission Errors**: Access denied errors are caught and displayed in the tree
 
-### Keyboard Shortcuts
+## Dependencies
+
+Core dependencies:
+- `eframe` / `egui`: GUI framework
+- `ropey`: Rope data structure for efficient text editing
+- `tokio`: Async runtime
+- `ignore`: Git-aware file walking (respects .gitignore)
+- `flume`: Fast multi-producer multi-consumer channels
+- `anyhow`: Error handling
+- `thiserror`: Error type derivation
+- `regex`: Regular expressions
+- `serde`: Serialization
+
+## Keyboard Shortcuts
 
 - **Ctrl+Z**: Undo last edit
 - **Ctrl+Y** or **Ctrl+Shift+Z**: Redo
@@ -147,69 +142,16 @@ lala/
 - **Delete**: Delete character at cursor
 - **Enter**: Insert newline
 
-### Menu
-
-- **File Menu**:
-  - New (not yet implemented)
-  - Open... (not yet implemented)
-  - Save
-  - Quit
-
-- **Edit Menu**:
-  - Undo
-  - Redo
-
-## Completion Criteria
-
-All completion criteria for feature/basic-editing have been met:
-
-- [x] `cargo test` passes all tests
-- [x] `cargo clippy` has no lint errors
-- [x] Can open and edit text
-- [x] Can input and delete text
-- [x] Ctrl+Z (Undo) and Ctrl+S (Save) work correctly
-- [x] `*` indicator appears after changes and disappears after save
-
-## Performance Considerations
-
-The current implementation uses String conversion for simplicity. This approach works well for files up to several thousand lines. For larger files, consider:
-
-1. Profiling with `cargo bench` (if benchmarks are added)
-2. Migrating to Approach B (direct Rope rendering) if conversion overhead becomes significant
-3. Implementing viewport-based rendering for very large files
-
 ## Future Enhancements
 
 Potential features for future development:
-
-- **File Operations**: New file, Open dialog, Save As
-- **Search**: Find and replace
-- **Syntax Highlighting**: Language-aware highlighting (feature/syntax-highlighting)
-- **Line Numbers**: Display line numbers in gutter
-- **Multiple Tabs**: Edit multiple files simultaneously
-- **Configuration**: User preferences and settings
-- **Themes**: Dark mode and custom color schemes
-
-## Dependencies
-
-### Core Dependencies
-
-- `ropey`: Rope data structure for efficient text editing
-- `tokio`: Async runtime for file I/O
-- `anyhow`: Error handling
-- `thiserror`: Error type derivation
-- `serde`: Serialization (future use)
-
-### GUI Dependencies
-
-- `eframe`: egui framework wrapper
-- `egui`: Immediate mode GUI library
-- `env_logger`: Logging
-
-## License
-
-(Add your license information here)
-
-## Contributors
-
-(Add contributor information here)
+- Right-click context menu (new file, delete, rename)
+- File search in tree
+- Git status indicators
+- Drag and drop support
+- Tree icons for different file types
+- Keyboard navigation
+- Themes and syntax highlighting
+- Configuration system
+- Multiple cursors
+- Split view editing
