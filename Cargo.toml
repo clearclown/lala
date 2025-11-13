@@ -49,6 +49,10 @@ syntect = "5.2"
 # Markdown parsing
 pulldown-cmark = "0.12"
 
+# Terminal colors and formatting
+colored = "2.1"
+terminal_size = "0.3"
+
 [dev-dependencies]
 tempfile = "3.14"
 

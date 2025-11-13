@@ -8,8 +8,11 @@
 //! - ヘルプメッセージの表示 (`-h` / `--help`)
 //! - バージョン情報の表示 (`-v` / `--version`)
 //! - ファイルパス、ディレクトリパス、または空のエディタ起動の判定
+//! - Markdownプレビュー機能
 
-use clap::Parser;
+pub mod markdown_view;
+
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 #[cfg(test)]
@@ -24,6 +27,12 @@ pub enum StartupMode {
     OpenDir(PathBuf),
     /// 空のエディタウィンドウを開く
     Empty,
+    /// Markdownプレビュー（CLIモード）
+    MarkdownPreview { file: PathBuf, no_color: bool },
+    /// ファイル表示（CLIモード）
+    ViewFile { file: PathBuf, line_numbers: bool },
+    /// CLIコマンドが実行された（GUIを起動しない）
+    CliCommandExecuted,
 }
 
 /// lalaエディタのコマンドライン引数
@@ -41,6 +50,38 @@ struct Args {
     /// バージョン情報を表示
     #[arg(short = 'v', long = "version", action = clap::ArgAction::Version)]
     _version: Option<bool>,
+
+    /// サブコマンド
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+/// サブコマンド定義
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Markdownファイルをプレビュー表示
+    #[command(about = "Preview Markdown file in terminal")]
+    Markdown {
+        /// Markdownファイルのパス
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// カラー出力を無効化
+        #[arg(long)]
+        no_color: bool,
+    },
+
+    /// ファイルを表示
+    #[command(about = "View file content")]
+    View {
+        /// ファイルのパス
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// 行番号を表示
+        #[arg(short = 'n', long)]
+        line_numbers: bool,
+    },
 }
 
 /// コマンドライン引数をパースして、StartupModeを返す
@@ -64,6 +105,23 @@ where
 {
     let args = Args::parse_from(args);
 
+    // サブコマンドを処理
+    if let Some(command) = args.command {
+        return match command {
+            Commands::Markdown { file, no_color } => {
+                StartupMode::MarkdownPreview { file, no_color }
+            }
+            Commands::View {
+                file,
+                line_numbers,
+            } => StartupMode::ViewFile {
+                file,
+                line_numbers,
+            },
+        };
+    }
+
+    // サブコマンドがない場合は従来の動作
     match args.path {
         Some(path) => {
             // パスが存在するかどうかのチェックはcore-engineの責務なので、
