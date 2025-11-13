@@ -1,173 +1,157 @@
-# lala - テキストエディタ コアエンジン
+# Lala Editor
 
-高性能なテキストエディタのコアエンジンライブラリ
+A modern text editor with a graphical user interface built with Rust, egui, and eframe.
 
-## 概要
+## Features
 
-`lala`は、Rustで実装された高性能テキストエディタのコアエンジンです。Ropeデータ構造を使用し、大規模ファイル（100MB以上）でもneovim並みの応答性を実現します。
+### ✨ File Tree View
+- **Tree Display**: Browse directories and files in a hierarchical tree view in the left sidebar
+- **Directory Expansion**: Click the folder icon to expand/collapse directories
+- **File Opening**: Click on files to open them in editor tabs
+- **Async Loading**: Non-blocking directory scanning prevents UI freezes
+- **Smart Filtering**:
+  - Respects `.gitignore` files (when in a git repository)
+  - Filters out `.git` directories automatically
+  - Does not follow symbolic links (for security)
+- **Error Handling**: Displays access denied messages for restricted directories
+- **Performance**: Optimized for large directories (like `node_modules`)
 
-## 特徴
+### 📝 Basic Text Editing
+- **Text Display**: Efficiently displays text from Rope buffer in GUI
+- **Text Input**: Full keyboard input support (characters, backspace, enter, delete)
+- **Cursor Synchronization**: Bidirectional sync between GUI and core engine
+- **Undo/Redo**: Full undo/redo support with keyboard shortcuts
+  - Ctrl+Z: Undo
+  - Ctrl+Y or Ctrl+Shift+Z: Redo
+- **Save Functionality**: Async file saving with keyboard shortcut
+  - Ctrl+S: Save file
+- **Unsaved Changes Indicator**: Shows `*` in status bar when file is modified
+- **Status Bar**: Displays file name, cursor position, and character count
 
-- **高速なテキストバッファ管理**: Ropeデータ構造（`ropey`クレート）により、大規模ファイルでも高速に動作
-- **非同期ファイルI/O**: `tokio`による非ブロッキングなファイル読み書き
-- **完全なUndo/Redo**: 複数の編集操作を元に戻したり、やり直したりできる
-- **エラーハンドリング**: Rustの`Result`型による堅牢なエラー処理
-- **GUI/CUI非依存**: 純粋なライブラリとして、任意のフロントエンドから利用可能
-- **マルチバイト文字対応**: UTF-8文字列を正しく扱える
+### 🔍 Advanced Search and Replace
+- **Grep Integration**: Fast file-wide search using ripgrep
+- **Multi-file Search**: Search across multiple files in directories
+- **Replace Functionality**: Find and replace text in files
+- **Regex Support**: Full regular expression support for advanced patterns
 
-## パフォーマンス
+### 🎨 Editor Features
+- **Multi-tab Editing**: Open multiple files simultaneously
+- **Syntax Highlighting**: Code editor with monospace font
+- **File Management**: Save files with modification indicators
+- **Tab Management**: Close tabs with the × button
 
-**100MBファイルでの実測値:**
+## Architecture
 
-| 操作 | 時間 | 要件 |
-|------|------|------|
-| ファイル読み込み | 358ms | < 5秒 |
-| テキスト挿入 | 22μs | < 16ms |
-| テキスト削除 | 6μs | < 16ms |
-| Undo | 968ns | < 16ms |
-| Redo | 742ns | < 16ms |
-| ファイル保存 | 164ms | - |
+The project is organized as a Cargo workspace with two main crates:
 
-✅ すべての操作がneovim並みの応答性要件を満たしています
-
-## インストール
-
-`Cargo.toml`に以下を追加:
-
-```toml
-[dependencies]
-lala = "0.1.0"
-ropey = "1.6"
-tokio = { version = "1.35", features = ["full"] }
-thiserror = "1.0"
-```
-
-## 使用例
-
-### 基本的な使用方法
-
-```rust
-use lala::core::{EditorCore, CoreResult};
-
-#[tokio::main]
-async fn main() -> CoreResult<()> {
-    // エディタを作成
-    let mut editor = EditorCore::new();
-
-    // ファイルを読み込む
-    editor.load_file("sample.txt").await?;
-
-    // テキストを編集
-    editor.insert(0, "Hello, ")?;
-    editor.delete(7, 12)?;
-
-    // Undo/Redo
-    editor.undo()?;
-    editor.redo()?;
-
-    // ファイルに保存
-    editor.save_file("output.txt").await?;
-
-    Ok(())
-}
-```
-
-### 空のバッファから開始
-
-```rust
-use lala::core::EditorCore;
-
-let mut editor = EditorCore::new();
-editor.insert(0, "新しいテキスト")?;
-println!("{}", editor); // Display traitが実装されている
-```
-
-### 既存のテキストで初期化
-
-```rust
-use lala::core::EditorCore;
-
-let editor = EditorCore::from_text("Hello, World!");
-assert_eq!(editor.len(), 13);
-```
-
-## API リファレンス
-
-### `EditorCore`
-
-主要なメソッド:
-
-- `new()` - 空のエディタを作成
-- `from_text(text: &str)` - テキストで初期化
-- `load_file(path)` - ファイルを非同期で読み込み
-- `save_file(path)` - ファイルに非同期で保存
-- `insert(index, text)` - 指定位置にテキストを挿入
-- `delete(start, end)` - 指定範囲のテキストを削除
-- `undo()` - 最後の操作を元に戻す
-- `redo()` - Undoした操作をやり直す
-- `len()` - バッファの文字数を取得
-- `is_empty()` - バッファが空か判定
-
-詳細なAPIドキュメント:
+### `core-cli`
+The command-line interface that launches the application:
 ```bash
-cargo doc --open
+lala [PATH]  # Opens the editor with the specified file or directory
+lala .       # Opens current directory
 ```
 
-## 開発
+### `gui-base`
+The GUI application built with egui/eframe:
+- `src/lib.rs`: Main application entry point
+- `src/gui/mod.rs`: GUI application state and rendering
+- `src/gui/file_tree.rs`: File tree component with async loading
 
-### テストの実行
+### Core Components
 
+#### Text Buffer
+The core editing engine uses a Rope-based text buffer for efficient editing:
+- Supports efficient insert/delete operations
+- Character-indexed operations
+- Line-based operations
+
+#### Text Synchronization Strategy
+The editor uses an efficient synchronization approach:
+1. Convert Rope to String for display in egui's TextEdit
+2. Detect changes after user input
+3. Calculate diff between old and new text
+4. Send changes to core engine via insert_char/delete_range APIs
+5. Synchronize cursor position bidirectionally
+
+## Building and Running
+
+### Prerequisites
+- Rust 1.70 or later
+- Cargo
+
+### Build
 ```bash
-# 全テストを実行
+cargo build --release
+```
+
+### Run
+```bash
+# Run in development mode
+cargo run -- .
+
+# Or run the binary directly
+./target/release/lala .
+```
+
+### Test
+```bash
+# Run all tests
 cargo test
 
-# 特定のテストを実行
-cargo test test_insert
-
-# テスト出力を表示
+# Run with output
 cargo test -- --nocapture
 ```
 
-### ベンチマークの実行
-
+### Lint
 ```bash
-cargo bench --bench performance
+cargo clippy --all-targets --all-features
 ```
 
-### Lintチェック
+## Implementation Details
 
-```bash
-cargo clippy -- -D warnings
-```
+### Async Directory Loading
+The file tree uses async I/O to prevent UI freezes:
+1. **Background Thread**: Directory scanning happens in a separate thread using `tokio::spawn`
+2. **Channel Communication**: Results are sent to the GUI thread via `flume` channels
+3. **Incremental Updates**: The tree updates as directories are scanned
+4. **Depth Limiting**: Initial load is limited to 3 levels deep for performance
 
-## テストカバレッジ
+### Security Considerations
+- **Symlink Handling**: Symbolic links are not followed to prevent infinite loops and security issues
+- **Permission Errors**: Access denied errors are caught and displayed in the tree
 
-- **28個のユニットテスト** (全てパス)
-  - 基本操作テスト
-  - エッジケーステスト
-  - 統合テスト
-  - 非同期I/Oテスト
+## Dependencies
 
-## プロジェクト構造
+Core dependencies:
+- `eframe` / `egui`: GUI framework
+- `ropey`: Rope data structure for efficient text editing
+- `tokio`: Async runtime
+- `ignore`: Git-aware file walking (respects .gitignore)
+- `flume`: Fast multi-producer multi-consumer channels
+- `anyhow`: Error handling
+- `thiserror`: Error type derivation
+- `regex`: Regular expressions
+- `serde`: Serialization
 
-```
-lala/
-├── src/
-│   ├── lib.rs          # ライブラリエントリポイント
-│   └── core/
-│       ├── mod.rs      # EditorCore実装
-│       ├── error.rs    # カスタムエラー型
-│       └── tests.rs    # テストコード
-├── benches/
-│   └── performance.rs  # パフォーマンステスト
-├── Cargo.toml          # 依存関係設定
-└── README.md           # このファイル
-```
+## Keyboard Shortcuts
 
-## ライセンス
+- **Ctrl+Z**: Undo last edit
+- **Ctrl+Y** or **Ctrl+Shift+Z**: Redo
+- **Ctrl+S**: Save file
+- **Backspace**: Delete character before cursor
+- **Delete**: Delete character at cursor
+- **Enter**: Insert newline
 
-未定
+## Future Enhancements
 
-## 貢献
-
-バグ報告や機能リクエストは、GitHubのIssuesで受け付けています。
+Potential features for future development:
+- Right-click context menu (new file, delete, rename)
+- File search in tree
+- Git status indicators
+- Drag and drop support
+- Tree icons for different file types
+- Keyboard navigation
+- Themes and syntax highlighting
+- Configuration system
+- Multiple cursors
+- Split view editing
