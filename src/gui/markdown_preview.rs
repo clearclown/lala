@@ -176,9 +176,9 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 let code = extract_text_until_end(&events[i..], TagEnd::CodeBlock);
 
                 ui.add_space(5.0);
-                egui::Frame::none()
+                egui::Frame::NONE
                     .fill(ui.style().visuals.code_bg_color)
-                    .inner_margin(egui::Margin::same(8.0))
+                    .inner_margin(egui::Margin::same(8))
                     .show(ui, |ui| {
                         ui.label(
                             egui::RichText::new(code)

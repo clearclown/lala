@@ -267,21 +267,40 @@ IME is automatically enabled when the text editor has focus. For best results:
 ./lala-ime.sh
 ```
 
+**Troubleshooting (If Japanese input doesn't work):**
+```bash
+# Use the debug script to diagnose and fix IME issues
+./lala-ime-debug.sh
+```
+
+This script will:
+- Restart ibus-daemon
+- Set all required environment variables (including critical GLFW_IM_MODULE)
+- Display diagnostic information
+- Launch lala with correct settings
+
 **Manual Way:**
 ```bash
 # If using ibus (recommended for Japanese)
 export GTK_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
 export QT_IM_MODULE=ibus
+export GLFW_IM_MODULE=ibus  # CRITICAL for egui/winit apps
 
 # If using fcitx
 export GTK_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 export QT_IM_MODULE=fcitx
+export GLFW_IM_MODULE=fcitx
+
+# Make sure ibus-daemon is running
+ibus-daemon -drx
 
 # Then run lala
 ./target/release/lala
 ```
+
+For detailed troubleshooting, see [IME-TROUBLESHOOTING.md](IME-TROUBLESHOOTING.md).
 
 ### macOS
 

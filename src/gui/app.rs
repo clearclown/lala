@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use crate::core_engine::{Buffer, BufferId};
 use crate::file_tree::FileTree;
 use crate::search::GrepEngine;
+use crate::llm::GeminiClient;
 
 use super::search_panel::SearchPanel;
 use super::grep_panel::GrepPanel;
@@ -45,6 +46,13 @@ pub struct LalaApp {
     // Preview state
     show_preview: bool,
     preview_mode: PreviewMode,
+
+    // Theme state
+    is_light_theme: bool,
+
+    // LLM integration (optional)
+    llm_client: Option<GeminiClient>,
+    llm_status: String,
 }
 
 impl LalaApp {
@@ -56,6 +64,12 @@ impl LalaApp {
 
         let buffer = Buffer::from_string(buffer_id, empty_text.clone(), None);
         buffers.insert(buffer_id, buffer);
+
+        // Try to initialize LLM client from environment
+        let (llm_client, llm_status) = match GeminiClient::from_env() {
+            Ok(client) => (Some(client), "LLM ready (Gemini 1.5 Flash)".to_string()),
+            Err(_) => (None, "LLM not available (set GEMINI_API_KEY)".to_string()),
+        };
 
         Self {
             buffers,
@@ -74,6 +88,9 @@ impl LalaApp {
             file_path_input: String::new(),
             show_preview: false,
             preview_mode: PreviewMode::None,
+            is_light_theme: false, // Default to dark theme
+            llm_client,
+            llm_status,
         }
     }
 
@@ -230,39 +247,78 @@ impl LalaApp {
 
         // Menu bar
         egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("New (Ctrl+N)").clicked() {
                         self.new_file();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button("Open (Ctrl+O)").clicked() {
                         self.show_file_dialog = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button("Save (Ctrl+S)").clicked() {
                         self.save_file();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button("Save As (Ctrl+Shift+S)").clicked() {
                         self.show_save_as_dialog = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
                 ui.menu_button("Edit", |ui| {
                     if ui.button("Find (Ctrl+F)").clicked() {
                         self.show_search_panel = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button("Replace (Ctrl+H)").clicked() {
                         self.show_search_panel = true;
                         self.search_panel.set_replace_mode(true);
-                        ui.close_menu();
+                        ui.close();
+                    }
+                });
+
+                ui.menu_button("Tools", |ui| {
+                    ui.label(&self.llm_status);
+                    ui.separator();
+
+                    let can_use_llm = self.llm_client.is_some();
+
+                    if ui.add_enabled(can_use_llm, egui::Button::new("🤖 Improve Markdown")).clicked() {
+                        if let Some(client) = &self.llm_client {
+                            match client.improve_markdown(&self.current_text) {
+                                Ok(improved) => {
+                                    self.current_text = improved;
+                                    self.text_changed = true;
+                                }
+                                Err(e) => {
+                                    eprintln!("LLM Error: {}", e);
+                                }
+                            }
+                        }
+                        ui.close();
+                    }
+
+                    if !can_use_llm {
+                        ui.label("💡 Tip: Set GEMINI_API_KEY to enable");
                     }
                 });
 
                 ui.menu_button("View", |ui| {
+                    // Theme toggle
+                    let theme_label = if self.is_light_theme {
+                        "🌙 Dark Theme"
+                    } else {
+                        "☀️ Light Theme"
+                    };
+                    if ui.button(theme_label).clicked() {
+                        self.is_light_theme = !self.is_light_theme;
+                        ui.close();
+                    }
+
+                    ui.separator();
+
                     let preview_label = if self.show_preview {
                         "Hide Preview (Ctrl+P)"
                     } else {
@@ -280,7 +336,7 @@ impl LalaApp {
                                 self.preview_mode = PreviewMode::Markdown;
                             }
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     ui.separator();
@@ -289,25 +345,25 @@ impl LalaApp {
                     if ui.selectable_label(self.preview_mode == PreviewMode::Markdown, "Markdown").clicked() {
                         self.preview_mode = PreviewMode::Markdown;
                         self.show_preview = true;
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui.selectable_label(self.preview_mode == PreviewMode::Html, "HTML").clicked() {
                         self.preview_mode = PreviewMode::Html;
                         self.show_preview = true;
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui.selectable_label(self.preview_mode == PreviewMode::Latex, "LaTeX").clicked() {
                         self.preview_mode = PreviewMode::Latex;
                         self.show_preview = true;
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui.selectable_label(self.preview_mode == PreviewMode::Mermaid, "Mermaid").clicked() {
                         self.preview_mode = PreviewMode::Mermaid;
                         self.show_preview = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -374,13 +430,15 @@ impl LalaApp {
 
         // Main editor - NO PADDING
         egui::CentralPanel::default()
-            .frame(egui::Frame::none()) // Remove all frames and padding
+            .frame(egui::Frame::NONE) // Remove all frames and padding
             .show(ctx, |ui| {
                 let available_height = ui.available_height();
 
                 egui::ScrollArea::vertical()
                     .auto_shrink([false; 2])
                     .show(ui, |ui| {
+                        // TextEdit in egui 0.33+ automatically supports IME on all platforms
+                        // No manual IME configuration is needed
                         let response = ui.add(
                             egui::TextEdit::multiline(&mut self.current_text)
                                 .font(egui::TextStyle::Monospace)
@@ -389,18 +447,6 @@ impl LalaApp {
                                 .frame(false) // No frame around text edit
                         );
 
-                        // Enable IME (Input Method Editor) when text field has focus
-                        // This enables Japanese, Chinese, Korean, etc. input on all platforms
-                        if response.has_focus() {
-                            // Set IME output to enable input method editor
-                            ui.ctx().output_mut(|o| {
-                                o.ime = Some(egui::output::IMEOutput {
-                                    rect: response.rect,
-                                    cursor_rect: response.rect,
-                                });
-                            });
-                        }
-
                         // Request focus on first frame to ensure IME works immediately
                         if self.current_text.is_empty() && !self.text_changed {
                             response.request_focus();
@@ -408,10 +454,9 @@ impl LalaApp {
 
                         if response.changed() {
                             self.text_changed = true;
-                            // Update preview mode if needed
-                            if self.show_preview {
-                                self.preview_mode = self.detect_preview_mode();
-                            }
+                            // Don't auto-detect preview mode on text change
+                            // This prevents the preview from disappearing when editing
+                            // The user can manually change preview mode via View menu
                         }
                     });
             });
@@ -700,6 +745,13 @@ impl LalaApp {
 
 impl eframe::App for LalaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Apply theme
+        if self.is_light_theme {
+            ctx.set_visuals(egui::Visuals::light());
+        } else {
+            ctx.set_visuals(egui::Visuals::dark());
+        }
+
         // Handle keyboard shortcuts
         self.handle_keyboard_shortcuts(ctx);
 

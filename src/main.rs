@@ -4,6 +4,69 @@ use lala::LalaApp;
 use std::fs;
 use std::process;
 
+/// Setup custom fonts to support CJK (Chinese, Japanese, Korean) characters
+fn setup_custom_fonts(ctx: &egui::Context) {
+    use egui::FontFamily;
+    use std::sync::Arc;
+
+    let mut fonts = egui::FontDefinitions::default();
+
+    // Load system fonts that support Japanese characters
+    // Try to load CJK fonts from system if available
+    if let Ok(font_data) = std::fs::read("/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf")
+        .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"))
+        .or_else(|_| std::fs::read("/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc"))
+        .or_else(|_| std::fs::read("/System/Library/Fonts/Hiragino Sans GB.ttc"))
+        .or_else(|_| std::fs::read("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"))
+    {
+        fonts.font_data.insert(
+            "NotoSansCJK".to_owned(),
+            Arc::new(egui::FontData::from_owned(font_data)),
+        );
+
+        // Add to Proportional family (for UI)
+        fonts
+            .families
+            .entry(FontFamily::Proportional)
+            .or_default()
+            .insert(0, "NotoSansCJK".to_owned());
+
+        // Add to Monospace family (for code editor)
+        fonts
+            .families
+            .entry(FontFamily::Monospace)
+            .or_default()
+            .insert(0, "NotoSansCJK".to_owned());
+    }
+
+    // If Noto Sans CJK is not available, try other common Japanese fonts
+    if !fonts.font_data.contains_key("NotoSansCJK") {
+        // Try IPAGothic (common on Linux)
+        if let Ok(font_data) = std::fs::read("/usr/share/fonts/truetype/fonts-japanese-gothic.ttf")
+            .or_else(|_| std::fs::read("/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf"))
+        {
+            fonts.font_data.insert(
+                "IPAGothic".to_owned(),
+                Arc::new(egui::FontData::from_owned(font_data)),
+            );
+
+            fonts
+                .families
+                .entry(FontFamily::Proportional)
+                .or_default()
+                .insert(0, "IPAGothic".to_owned());
+
+            fonts
+                .families
+                .entry(FontFamily::Monospace)
+                .or_default()
+                .insert(0, "IPAGothic".to_owned());
+        }
+    }
+
+    ctx.set_fonts(fonts);
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logger for debugging
     env_logger::init();
@@ -124,7 +187,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     eframe::run_native(
         "lala",
         options,
-        Box::new(|cc| Ok(Box::new(LalaApp::new(cc)))),
+        Box::new(|cc| {
+            // Setup fonts to support CJK (Chinese, Japanese, Korean) characters
+            setup_custom_fonts(&cc.egui_ctx);
+            Ok(Box::new(LalaApp::new(cc)))
+        }),
     )?;
 
     Ok(())

@@ -8,13 +8,17 @@ if pgrep -x "ibus-daemon" > /dev/null; then
     export GTK_IM_MODULE=ibus
     export XMODIFIERS=@im=ibus
     export QT_IM_MODULE=ibus
+    export GLFW_IM_MODULE=ibus
 elif pgrep -x "fcitx" > /dev/null || pgrep -x "fcitx5" > /dev/null; then
     echo "Detected fcitx, setting environment variables..."
     export GTK_IM_MODULE=fcitx
     export XMODIFIERS=@im=fcitx
     export QT_IM_MODULE=fcitx
+    export GLFW_IM_MODULE=fcitx
 else
     echo "No IME detected, using default settings"
+    echo "If you're using ibus-mozc, please make sure it's running:"
+    echo "  ibus-daemon -drx"
 fi
 
 # Get the directory where this script is located

@@ -5,6 +5,7 @@ use egui::{ScrollArea, TextEdit};
 /// EditorPanel manages the text editor UI and integrates syntax highlighting
 pub struct EditorPanel {
     buffer: TextBuffer,
+    #[allow(dead_code)] // TODO: Re-enable when syntax highlighting is fixed for egui 0.33
     highlighter: SyntaxHighlighter,
     current_text: String,
 }
@@ -86,18 +87,21 @@ impl Point {
         ScrollArea::vertical()
             .auto_shrink([false; 2])
             .show(ui, |ui| {
-                // Use TextEdit with custom layouter for syntax highlighting
+                // TODO: Re-enable syntax highlighting after fixing egui 0.33 API compatibility
+                // Temporarily disabled to allow IME testing
                 let response = TextEdit::multiline(&mut self.current_text)
                     .font(egui::TextStyle::Monospace)
                     .code_editor()
                     .desired_width(f32::INFINITY)
-                    .layouter(&mut |ui, text, wrap_width| {
-                        // Use the highlighter to create a layout job
-                        let mut layout_job =
-                            self.highlighter.highlight(text, self.buffer.file_path());
-                        layout_job.wrap.max_width = wrap_width;
-                        ui.fonts(|f| f.layout_job(layout_job))
-                    })
+                    // .layouter(&mut |ui, text, wrap_width| {
+                    //     // Convert TextBuffer to &str for highlighting
+                    //     let text_str = text.as_str();
+                    //     // Use the highlighter to create a layout job
+                    //     let mut layout_job =
+                    //         self.highlighter.highlight(text_str, self.buffer.file_path());
+                    //     layout_job.wrap.max_width = wrap_width;
+                    //     ui.fonts(|f| f.layout_job(layout_job))
+                    // })
                     .show(ui);
 
                 // Update buffer if text changed

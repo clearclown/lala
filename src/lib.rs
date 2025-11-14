@@ -8,5 +8,6 @@ pub mod core_engine;
 pub mod file_tree;
 pub mod gui;
 pub mod search;
+pub mod llm;  // LLM integration (optional feature)
 
 pub use gui::LalaApp;

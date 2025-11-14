@@ -23,8 +23,8 @@ path = "src/main.rs"
 
 [dependencies]
 # GUI framework
-eframe = "0.29"
-egui = "0.29"
+eframe = "0.33"
+egui = "0.33"
 
 # Text rope for efficient text editing
 ropey = "1.6"
@@ -73,6 +73,14 @@ ego-tree = "0.6"          # For HTML DOM traversal
 
 # Directory access
 dirs = "5.0"              # Cross-platform directory paths
+
+# HTTP client for LLM integration (optional feature)
+reqwest = { version = "0.12", features = ["json", "blocking"], optional = true }
+serde_json = "1.0"
+
+[features]
+default = []
+llm = ["reqwest"]  # Optional LLM integration feature
 
 [dev-dependencies]
 tempfile = "3.14"
