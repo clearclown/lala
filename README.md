@@ -1,5 +1,11 @@
 # Lala Editor
 
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
+[![Crates.io](https://img.shields.io/crates/v/lala.svg)](https://crates.io/crates/lala)
+[![CI](https://github.com/yourusername/lala/workflows/CI/badge.svg)](https://github.com/yourusername/lala/actions)
+
+**Read this in other languages**: [日本語](docs/README_ja.md) | [فارسی](docs/README_fa.md) | [العربية](docs/README_ar.md) | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [Русский](docs/README_ru.md)
+
 A modern, lightweight text editor with **both GUI and CLI** built with Rust, egui, and eframe.
 
 **NEW**: Now with comprehensive command-line interface! Preview **Markdown, HTML, Mermaid diagrams, and LaTeX** documents with beautiful terminal formatting, plus file viewing with line numbers - all from your terminal!

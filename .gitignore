@@ -2,15 +2,95 @@
 /target/
 **/*.rs.bk
 *.pdb
-Cargo.lock
+
+# Cargo.lock should be committed for binaries but not libraries
+# We commit it since lala is a binary
+# Cargo.lock
 
 # IDE
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
+.fleet/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+*.swo
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Package outputs
+*.deb
+*.rpm
+*.msi
+*.dmg
+*.pkg
+*.tar.gz
+*.zip
+
+# Test coverage
+*.profraw
+*.profdata
+/coverage/
+/lcov.info
+
+# Benchmark results
+/bench-results/
+
+# Documentation build
+/book/
+
+# Local development
+.env
+.env.local
+.local/
+
+# MacOS
+.AppleDouble
+.LSOverride
+Icon
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
