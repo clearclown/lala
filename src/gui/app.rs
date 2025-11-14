@@ -139,7 +139,14 @@ impl LalaApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::P)) {
             self.show_preview = !self.show_preview;
             if self.show_preview {
-                self.preview_mode = self.detect_preview_mode();
+                // Auto-detect or keep current mode
+                let detected = self.detect_preview_mode();
+                if detected != PreviewMode::None {
+                    self.preview_mode = detected;
+                } else if self.preview_mode == PreviewMode::None {
+                    // Default to Markdown if no file extension
+                    self.preview_mode = PreviewMode::Markdown;
+                }
             }
         }
 
@@ -216,6 +223,11 @@ impl LalaApp {
     }
 
     fn show_main_editor(&mut self, ctx: &egui::Context) {
+        // Update preview mode when file changes
+        if self.show_preview && self.preview_mode == PreviewMode::None {
+            self.preview_mode = self.detect_preview_mode();
+        }
+
         // Menu bar
         egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -259,8 +271,42 @@ impl LalaApp {
                     if ui.button(preview_label).clicked() {
                         self.show_preview = !self.show_preview;
                         if self.show_preview {
-                            self.preview_mode = self.detect_preview_mode();
+                            // Auto-detect or keep current mode
+                            let detected = self.detect_preview_mode();
+                            if detected != PreviewMode::None {
+                                self.preview_mode = detected;
+                            } else if self.preview_mode == PreviewMode::None {
+                                // Default to Markdown if no file extension
+                                self.preview_mode = PreviewMode::Markdown;
+                            }
                         }
+                        ui.close_menu();
+                    }
+
+                    ui.separator();
+                    ui.label("Preview Mode:");
+
+                    if ui.selectable_label(self.preview_mode == PreviewMode::Markdown, "Markdown").clicked() {
+                        self.preview_mode = PreviewMode::Markdown;
+                        self.show_preview = true;
+                        ui.close_menu();
+                    }
+
+                    if ui.selectable_label(self.preview_mode == PreviewMode::Html, "HTML").clicked() {
+                        self.preview_mode = PreviewMode::Html;
+                        self.show_preview = true;
+                        ui.close_menu();
+                    }
+
+                    if ui.selectable_label(self.preview_mode == PreviewMode::Latex, "LaTeX").clicked() {
+                        self.preview_mode = PreviewMode::Latex;
+                        self.show_preview = true;
+                        ui.close_menu();
+                    }
+
+                    if ui.selectable_label(self.preview_mode == PreviewMode::Mermaid, "Mermaid").clicked() {
+                        self.preview_mode = PreviewMode::Mermaid;
+                        self.show_preview = true;
                         ui.close_menu();
                     }
                 });
@@ -342,6 +388,23 @@ impl LalaApp {
                                 .min_size(egui::vec2(f32::INFINITY, available_height))
                                 .frame(false) // No frame around text edit
                         );
+
+                        // Enable IME (Input Method Editor) when text field has focus
+                        // This enables Japanese, Chinese, Korean, etc. input on all platforms
+                        if response.has_focus() {
+                            // Set IME output to enable input method editor
+                            ui.ctx().output_mut(|o| {
+                                o.ime = Some(egui::output::IMEOutput {
+                                    rect: response.rect,
+                                    cursor_rect: response.rect,
+                                });
+                            });
+                        }
+
+                        // Request focus on first frame to ensure IME works immediately
+                        if self.current_text.is_empty() && !self.text_changed {
+                            response.request_focus();
+                        }
 
                         if response.changed() {
                             self.text_changed = true;
@@ -447,23 +510,87 @@ impl LalaApp {
         let mut is_open = self.show_file_dialog;
         egui::Window::new("Open File")
             .open(&mut is_open)
+            .default_width(500.0)
             .show(ctx, |ui| {
-                ui.label("Enter file path:");
-                ui.text_edit_singleline(&mut self.file_path_input);
+                ui.heading("Open File");
+                ui.separator();
 
+                // Quick access buttons
                 ui.horizontal(|ui| {
-                    if ui.button("Open").clicked() {
-                        should_open = Some(PathBuf::from(self.file_path_input.clone()));
-                        should_close = true;
+                    if ui.button("🏠 Home").clicked() {
+                        if let Some(home) = dirs::home_dir() {
+                            self.file_path_input = home.display().to_string();
+                        }
                     }
-                    if ui.button("Cancel").clicked() {
-                        should_close = true;
+                    if ui.button("📁 Documents").clicked() {
+                        if let Some(docs) = dirs::document_dir() {
+                            self.file_path_input = docs.display().to_string();
+                        }
+                    }
+                    if ui.button("💻 Desktop").clicked() {
+                        if let Some(desktop) = dirs::desktop_dir() {
+                            self.file_path_input = desktop.display().to_string();
+                        }
                     }
                 });
 
                 ui.separator();
-                ui.label("Recent:");
-                // TODO: Add recent files list
+
+                // Current directory
+                ui.label("Current working directory:");
+                if let Ok(cwd) = std::env::current_dir() {
+                    if ui.button(cwd.display().to_string()).clicked() {
+                        self.file_path_input = cwd.display().to_string();
+                    }
+                }
+
+                ui.separator();
+
+                // File path input
+                ui.label("File path:");
+                ui.text_edit_singleline(&mut self.file_path_input);
+
+                ui.label("Examples:");
+                ui.monospace("  ./README.md");
+                ui.monospace("  /home/user/documents/file.txt");
+                ui.monospace("  ~/Documents/file.md");
+
+                ui.separator();
+
+                // Directory browser
+                ui.label("Recent directories:");
+                egui::ScrollArea::vertical()
+                    .max_height(150.0)
+                    .show(ui, |ui| {
+                        // Show some common paths
+                        let paths = vec![
+                            ("Current Directory", std::env::current_dir().ok()),
+                            ("Home", dirs::home_dir()),
+                            ("Documents", dirs::document_dir()),
+                            ("Downloads", dirs::download_dir()),
+                        ];
+
+                        for (name, path_opt) in paths {
+                            if let Some(path) = path_opt {
+                                if ui.button(format!("📂 {}: {}", name, path.display())).clicked() {
+                                    self.file_path_input = path.display().to_string();
+                                }
+                            }
+                        }
+                    });
+
+                ui.separator();
+
+                // Action buttons
+                ui.horizontal(|ui| {
+                    if ui.button("✓ Open").clicked() {
+                        should_open = Some(PathBuf::from(self.file_path_input.clone()));
+                        should_close = true;
+                    }
+                    if ui.button("✗ Cancel").clicked() {
+                        should_close = true;
+                    }
+                });
             });
 
         self.show_file_dialog = is_open;
@@ -485,16 +612,74 @@ impl LalaApp {
         let mut is_open = self.show_save_as_dialog;
         egui::Window::new("Save As")
             .open(&mut is_open)
+            .default_width(500.0)
             .show(ctx, |ui| {
-                ui.label("Enter file path:");
+                ui.heading("Save As");
+                ui.separator();
+
+                // Quick access buttons
+                ui.horizontal(|ui| {
+                    if ui.button("🏠 Home").clicked() {
+                        if let Some(home) = dirs::home_dir() {
+                            self.file_path_input = home.display().to_string() + "/";
+                        }
+                    }
+                    if ui.button("📁 Documents").clicked() {
+                        if let Some(docs) = dirs::document_dir() {
+                            self.file_path_input = docs.display().to_string() + "/";
+                        }
+                    }
+                    if ui.button("💻 Desktop").clicked() {
+                        if let Some(desktop) = dirs::desktop_dir() {
+                            self.file_path_input = desktop.display().to_string() + "/";
+                        }
+                    }
+                });
+
+                ui.separator();
+
+                // File path input
+                ui.label("Save as:");
                 ui.text_edit_singleline(&mut self.file_path_input);
 
+                ui.label("Examples:");
+                ui.monospace("  ./myfile.md");
+                ui.monospace("  /home/user/documents/newfile.txt");
+                ui.monospace("  ~/Documents/document.tex");
+
+                ui.separator();
+
+                // Common locations
+                ui.label("Save to common locations:");
+                egui::ScrollArea::vertical()
+                    .max_height(150.0)
+                    .show(ui, |ui| {
+                        let paths = vec![
+                            ("Current Directory", std::env::current_dir().ok()),
+                            ("Home", dirs::home_dir()),
+                            ("Documents", dirs::document_dir()),
+                            ("Downloads", dirs::download_dir()),
+                            ("Desktop", dirs::desktop_dir()),
+                        ];
+
+                        for (name, path_opt) in paths {
+                            if let Some(path) = path_opt {
+                                if ui.button(format!("📂 {}", name)).clicked() {
+                                    self.file_path_input = path.display().to_string() + "/";
+                                }
+                            }
+                        }
+                    });
+
+                ui.separator();
+
+                // Action buttons
                 ui.horizontal(|ui| {
-                    if ui.button("Save").clicked() {
+                    if ui.button("💾 Save").clicked() {
                         should_save = Some(PathBuf::from(self.file_path_input.clone()));
                         should_close = true;
                     }
-                    if ui.button("Cancel").clicked() {
+                    if ui.button("✗ Cancel").clicked() {
                         should_close = true;
                     }
                 });

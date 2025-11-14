@@ -71,6 +71,9 @@ html2text = "0.12"        # HTML to text conversion
 scraper = "0.19"          # HTML parsing
 ego-tree = "0.6"          # For HTML DOM traversal
 
+# Directory access
+dirs = "5.0"              # Cross-platform directory paths
+
 [dev-dependencies]
 tempfile = "3.14"
 

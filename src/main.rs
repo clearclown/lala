@@ -117,6 +117,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1280.0, 720.0])
             .with_title("Lala - Modern Text Editor"),
+        // Note: IME input is enabled by default in egui
         ..Default::default()
     };
 

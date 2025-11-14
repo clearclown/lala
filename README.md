@@ -253,6 +253,53 @@ Core dependencies:
 - **Enter**: Insert newline
 - **Tab**: Insert tab/spaces
 
+## IME Support (Japanese, Chinese, Korean Input)
+
+Lala supports IME (Input Method Editor) for typing in Japanese, Chinese, Korean, and other languages on all platforms.
+
+### Linux (ibus-mozc, fcitx)
+
+IME is automatically enabled when the text editor has focus. For best results:
+
+**Easy Way (Recommended):**
+```bash
+# Use the provided launcher script that auto-detects your IME
+./lala-ime.sh
+```
+
+**Manual Way:**
+```bash
+# If using ibus (recommended for Japanese)
+export GTK_IM_MODULE=ibus
+export XMODIFIERS=@im=ibus
+export QT_IM_MODULE=ibus
+
+# If using fcitx
+export GTK_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export QT_IM_MODULE=fcitx
+
+# Then run lala
+./target/release/lala
+```
+
+### macOS
+
+IME works out of the box. Simply:
+1. Enable Japanese input in System Preferences → Keyboard → Input Sources
+2. Launch Lala
+3. Switch to Japanese input (Ctrl+Space or Cmd+Space)
+4. Start typing
+
+### Windows
+
+IME works out of the box. Simply:
+1. Enable Japanese input (Windows Key + Space)
+2. Launch Lala
+3. Start typing in Japanese
+
+**Note**: The editor automatically enables IME when you click inside the text area.
+
 ## CLI Commands
 
 ```bash
