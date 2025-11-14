@@ -1,8 +1,11 @@
 /// Integration tests for Lala Editor
 ///
 /// These tests verify that core functionality works correctly
+/// and that different modules work together properly
 
 use lala::core_engine::{Buffer, BufferId, Position, Range};
+
+// === Basic Buffer Tests ===
 
 #[test]
 fn test_buffer_creation() {
@@ -132,3 +135,4 @@ fn test_single_line_no_newline() {
     assert_eq!(buffer.line_count(), 1);
     assert_eq!(buffer.content(), "Single line");
 }
+

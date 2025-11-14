@@ -61,6 +61,7 @@ struct ResponsePart {
 }
 
 /// Gemini LLM client
+#[derive(Debug)]
 pub struct GeminiClient {
     #[allow(dead_code)]
     api_key: String,
