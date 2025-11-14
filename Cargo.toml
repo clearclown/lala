@@ -53,6 +53,11 @@ pulldown-cmark = "0.12"
 colored = "2.1"
 terminal_size = "0.3"
 
+# Format support: HTML, Mermaid, LaTeX
+html2text = "0.12"        # HTML to text conversion
+scraper = "0.19"          # HTML parsing
+ego-tree = "0.6"          # For HTML DOM traversal
+
 [dev-dependencies]
 tempfile = "3.14"
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Lala now supports comprehensive command-line operations! You can view files, preview Markdown with beautiful formatting, and more - all without launching the GUI.
+Lala now supports comprehensive command-line operations! You can preview **Markdown, HTML, Mermaid diagrams, and LaTeX documents** with beautiful terminal formatting, view files, and more - all without launching the GUI.
 
 ---
 
@@ -82,7 +82,114 @@ fn main() {
 ────────────────────────────────────────
 ```
 
-### 3. View File
+### 3. HTML Preview (NEW!)
+
+Preview HTML files in your terminal with beautiful formatting:
+
+```bash
+lala html <FILE> [OPTIONS]
+```
+
+**Features:**
+- ✨ **Colored output** - Styled headings, links, code
+- 📐 **Proper structure** - Tables, lists, paragraphs
+- 📝 **Text styling** - Bold, italic, inline code
+- 📋 **Lists** - Both ordered and unordered
+- 💻 **Code blocks** - Preserved formatting
+- 🔗 **Links** - Displayed with URLs
+- 📊 **Tables** - Well-formatted tables
+
+**Options:**
+- `--no-color` - Disable colored output
+
+**Examples:**
+```bash
+# Preview HTML with colors
+lala html page.html
+
+# Preview without colors (plain text)
+lala html page.html --no-color
+
+# Pipe to less for scrolling
+lala html page.html | less -R
+```
+
+### 4. Mermaid Diagram Preview (NEW!)
+
+Preview Mermaid diagrams as ASCII art:
+
+```bash
+lala mermaid <FILE> [OPTIONS]
+```
+
+**Supported Diagram Types:**
+- 📊 **Flowcharts** - Graph TD/LR with boxes and arrows
+- 🔄 **Sequence Diagrams** - Message flows between actors
+- 📦 **Class Diagrams** - OOP class structures
+- 🔀 **State Diagrams** - State transitions
+- 🗃️ **ER Diagrams** - Entity relationships
+- 📅 **Gantt Charts** - Project timelines
+- 🥧 **Pie Charts** - Data visualization
+
+**Options:**
+- `--no-color` - Disable colored output
+
+**Examples:**
+```bash
+# Preview flowchart
+lala mermaid flowchart.mmd
+
+# Preview sequence diagram
+lala mermaid sequence.mmd
+
+# View without colors
+lala mermaid diagram.mmd --no-color
+```
+
+**Note:** For high-quality SVG/PNG output, install mermaid-cli:
+```bash
+npm install -g @mermaid-js/mermaid-cli
+mmdc -i diagram.mmd -o diagram.svg
+```
+
+### 5. LaTeX Document Preview (NEW!)
+
+Preview LaTeX documents with Unicode math symbols:
+
+```bash
+lala latex <FILE> [OPTIONS]
+```
+
+**Features:**
+- 🔤 **Unicode Math Symbols** - √, ∫, ∑, ∂, ∇, ∞
+- 🇬🇷 **Greek Letters** - α, β, γ, δ, θ, λ, μ, π, σ, ω
+- ➕ **Operators** - ±, ×, ÷, ≠, ≤, ≥, ≈, ≡
+- 📐 **Math Rendering** - Fractions, square roots, equations
+- 📑 **Document Structure** - Sections, subsections, lists
+- 📝 **Text Formatting** - Bold, italic, emphasis
+
+**Options:**
+- `--no-color` - Disable colored output
+
+**Examples:**
+```bash
+# Preview LaTeX document
+lala latex paper.tex
+
+# Preview without colors
+lala latex document.tex --no-color
+
+# Check math rendering
+lala latex equations.tex
+```
+
+**Note:** For full PDF compilation:
+```bash
+pdflatex document.tex
+# or use Overleaf: https://www.overleaf.com
+```
+
+### 6. View File
 
 Display file content with optional line numbers:
 

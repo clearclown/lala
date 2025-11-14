@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Alice
+    participant Bob
+    participant Server
+
+    Alice->>Bob: Hello Bob!
+    Bob->>Alice: Hi Alice!
+    Alice->>Server: Request data
+    Server->>Alice: Return data
+    Alice->>Bob: Share data
+    Bob->>Alice: Thanks!

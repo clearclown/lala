@@ -1,5 +1,5 @@
 use eframe::egui;
-use lala::cli::{markdown_view, parse_args_default, StartupMode};
+use lala::cli::{html_view, latex_view, markdown_view, mermaid_view, parse_args_default, StartupMode};
 use lala::LalaApp;
 use std::fs;
 use std::process;
@@ -25,6 +25,57 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{}", content);
             } else {
                 markdown_view::render_markdown_to_terminal(&content);
+            }
+
+            return Ok(());
+        }
+
+        StartupMode::HtmlPreview { file, no_color } => {
+            // Read HTML file
+            let content = fs::read_to_string(&file).unwrap_or_else(|err| {
+                eprintln!("Error reading file {:?}: {}", file, err);
+                process::exit(1);
+            });
+
+            // Render to terminal
+            if no_color {
+                html_view::render_html_plain(&content);
+            } else {
+                html_view::render_html_to_terminal(&content);
+            }
+
+            return Ok(());
+        }
+
+        StartupMode::MermaidPreview { file, no_color } => {
+            // Read Mermaid file
+            let content = fs::read_to_string(&file).unwrap_or_else(|err| {
+                eprintln!("Error reading file {:?}: {}", file, err);
+                process::exit(1);
+            });
+
+            // Render to terminal
+            if no_color {
+                mermaid_view::render_mermaid_plain(&content);
+            } else {
+                mermaid_view::render_mermaid_to_terminal(&content);
+            }
+
+            return Ok(());
+        }
+
+        StartupMode::LatexPreview { file, no_color } => {
+            // Read LaTeX file
+            let content = fs::read_to_string(&file).unwrap_or_else(|err| {
+                eprintln!("Error reading file {:?}: {}", file, err);
+                process::exit(1);
+            });
+
+            // Render to terminal
+            if no_color {
+                latex_view::render_latex_plain(&content);
+            } else {
+                latex_view::render_latex_to_terminal(&content);
             }
 
             return Ok(());

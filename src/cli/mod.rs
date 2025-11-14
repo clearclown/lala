@@ -11,6 +11,9 @@
 //! - Markdownプレビュー機能
 
 pub mod markdown_view;
+pub mod html_view;
+pub mod mermaid_view;
+pub mod latex_view;
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -29,6 +32,12 @@ pub enum StartupMode {
     Empty,
     /// Markdownプレビュー（CLIモード）
     MarkdownPreview { file: PathBuf, no_color: bool },
+    /// HTMLプレビュー（CLIモード）
+    HtmlPreview { file: PathBuf, no_color: bool },
+    /// Mermaidダイアグラムプレビュー（CLIモード）
+    MermaidPreview { file: PathBuf, no_color: bool },
+    /// LaTeXプレビュー（CLIモード）
+    LatexPreview { file: PathBuf, no_color: bool },
     /// ファイル表示（CLIモード）
     ViewFile { file: PathBuf, line_numbers: bool },
     /// CLIコマンドが実行された（GUIを起動しない）
@@ -63,6 +72,42 @@ enum Commands {
     #[command(about = "Preview Markdown file in terminal")]
     Markdown {
         /// Markdownファイルのパス
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// カラー出力を無効化
+        #[arg(long)]
+        no_color: bool,
+    },
+
+    /// HTMLファイルをプレビュー表示
+    #[command(about = "Preview HTML file in terminal")]
+    Html {
+        /// HTMLファイルのパス
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// カラー出力を無効化
+        #[arg(long)]
+        no_color: bool,
+    },
+
+    /// Mermaidダイアグラムをプレビュー表示
+    #[command(about = "Preview Mermaid diagram in terminal")]
+    Mermaid {
+        /// Mermaidファイルのパス
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// カラー出力を無効化
+        #[arg(long)]
+        no_color: bool,
+    },
+
+    /// LaTeXドキュメントをプレビュー表示
+    #[command(about = "Preview LaTeX document in terminal")]
+    Latex {
+        /// LaTeXファイルのパス
         #[arg(value_name = "FILE")]
         file: PathBuf,
 
@@ -110,6 +155,15 @@ where
         return match command {
             Commands::Markdown { file, no_color } => {
                 StartupMode::MarkdownPreview { file, no_color }
+            }
+            Commands::Html { file, no_color } => {
+                StartupMode::HtmlPreview { file, no_color }
+            }
+            Commands::Mermaid { file, no_color } => {
+                StartupMode::MermaidPreview { file, no_color }
+            }
+            Commands::Latex { file, no_color } => {
+                StartupMode::LatexPreview { file, no_color }
             }
             Commands::View {
                 file,

@@ -2,7 +2,7 @@
 
 A modern, lightweight text editor with **both GUI and CLI** built with Rust, egui, and eframe.
 
-**NEW**: Now with comprehensive command-line interface! View Markdown with beautiful formatting, file viewing with line numbers, and more - all from your terminal.
+**NEW**: Now with comprehensive command-line interface! Preview **Markdown, HTML, Mermaid diagrams, and LaTeX** documents with beautiful terminal formatting, plus file viewing with line numbers - all from your terminal!
 
 ## Features
 
@@ -40,11 +40,13 @@ A modern, lightweight text editor with **both GUI and CLI** built with Rust, egu
 - **Color Themes**: Syntax highlighting with customizable themes
 - **Multiple Languages**: Support for various programming languages via syntect
 
-### 📖 Markdown Preview
-- **Live Preview**: Real-time Markdown rendering
-- **GitHub-Style**: Familiar Markdown syntax and styling
-- **Rich Formatting**: Headers, lists, code blocks, emphasis, and more
-- **Pure Rust**: No WebView dependencies, rendered directly with egui
+### 📖 Multi-Format Preview
+- **Markdown Preview**: GitHub-style rendering with rich formatting
+- **HTML Preview**: Beautiful HTML display with tables, lists, and links
+- **Mermaid Diagrams**: ASCII art flowcharts, sequence diagrams, and more
+- **LaTeX Documents**: Unicode math symbols (√, ∫, ∑, α, β, etc.)
+- **Terminal Rendering**: All formats viewable in CLI with color support
+- **Pure Rust**: No WebView dependencies, rendered directly with egui or terminal
 
 ## Architecture
 
@@ -148,6 +150,15 @@ cargo run
 # Preview Markdown with beautiful formatting
 ./target/release/lala markdown README.md
 
+# Preview HTML files
+./target/release/lala html page.html
+
+# Preview Mermaid diagrams
+./target/release/lala mermaid diagram.mmd
+
+# Preview LaTeX documents with Unicode math symbols
+./target/release/lala latex document.tex
+
 # View file with line numbers
 ./target/release/lala view -n src/main.rs
 
@@ -156,9 +167,12 @@ cargo run
 
 # Get help for specific command
 ./target/release/lala markdown --help
+./target/release/lala html --help
+./target/release/lala mermaid --help
+./target/release/lala latex --help
 ```
 
-**See `CLI_USAGE.md` for complete CLI documentation with examples.**
+**See `CLI_USAGE.md` for complete CLI documentation and `FORMAT_SUPPORT.md` for format-specific details.**
 
 ### Test
 ```bash
@@ -191,6 +205,8 @@ Core dependencies:
 - **flume**: Fast multi-producer multi-consumer channels
 - **syntect**: Syntax highlighting engine
 - **pulldown-cmark**: Markdown parser
+- **html2text**: HTML to text conversion
+- **scraper**: HTML parsing and DOM manipulation
 - **regex**: Regular expression support
 - **anyhow**: Error handling
 - **thiserror**: Error type derivation
@@ -223,16 +239,28 @@ Core dependencies:
 # Markdown preview
 lala markdown <FILE> [--no-color]
 
+# HTML preview
+lala html <FILE> [--no-color]
+
+# Mermaid diagram preview
+lala mermaid <FILE> [--no-color]
+
+# LaTeX document preview
+lala latex <FILE> [--no-color]
+
 # File viewing
 lala view <FILE> [-n|--line-numbers]
 
 # Help
 lala --help
 lala markdown --help
+lala html --help
+lala mermaid --help
+lala latex --help
 lala view --help
 ```
 
-**For detailed CLI usage, examples, and tips, see `CLI_USAGE.md`.**
+**For detailed CLI usage, examples, and tips, see `CLI_USAGE.md` and `FORMAT_SUPPORT.md`.**
 
 ## Development
 
