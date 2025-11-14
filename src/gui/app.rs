@@ -8,6 +8,16 @@ use crate::search::GrepEngine;
 
 use super::search_panel::SearchPanel;
 use super::grep_panel::GrepPanel;
+use super::markdown_preview;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum PreviewMode {
+    Markdown,
+    Html,
+    Latex,
+    Mermaid,
+    None,
+}
 
 pub struct LalaApp {
     // Core components
@@ -31,6 +41,10 @@ pub struct LalaApp {
     show_file_dialog: bool,
     show_save_as_dialog: bool,
     file_path_input: String,
+
+    // Preview state
+    show_preview: bool,
+    preview_mode: PreviewMode,
 }
 
 impl LalaApp {
@@ -58,7 +72,28 @@ impl LalaApp {
             show_file_dialog: false,
             show_save_as_dialog: false,
             file_path_input: String::new(),
+            show_preview: false,
+            preview_mode: PreviewMode::None,
         }
+    }
+
+    fn detect_preview_mode(&self) -> PreviewMode {
+        if let Some(buffer_id) = self.active_buffer_id {
+            if let Some(buffer) = self.buffers.get(&buffer_id) {
+                if let Some(path) = buffer.file_path() {
+                    if let Some(ext) = path.extension() {
+                        return match ext.to_str() {
+                            Some("md") | Some("markdown") => PreviewMode::Markdown,
+                            Some("html") | Some("htm") => PreviewMode::Html,
+                            Some("tex") | Some("latex") => PreviewMode::Latex,
+                            Some("mmd") | Some("mermaid") => PreviewMode::Mermaid,
+                            _ => PreviewMode::None,
+                        };
+                    }
+                }
+            }
+        }
+        PreviewMode::None
     }
 
     fn handle_keyboard_shortcuts(&mut self, ctx: &egui::Context) {
@@ -98,6 +133,14 @@ impl LalaApp {
             i.modifiers.command && i.modifiers.shift && i.key_pressed(egui::Key::F)
         }) {
             self.show_grep_panel = true;
+        }
+
+        // Ctrl+P: Toggle preview
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::P)) {
+            self.show_preview = !self.show_preview;
+            if self.show_preview {
+                self.preview_mode = self.detect_preview_mode();
+            }
         }
 
         // Escape: Close panels
@@ -207,6 +250,21 @@ impl LalaApp {
                     }
                 });
 
+                ui.menu_button("View", |ui| {
+                    let preview_label = if self.show_preview {
+                        "Hide Preview (Ctrl+P)"
+                    } else {
+                        "Show Preview (Ctrl+P)"
+                    };
+                    if ui.button(preview_label).clicked() {
+                        self.show_preview = !self.show_preview;
+                        if self.show_preview {
+                            self.preview_mode = self.detect_preview_mode();
+                        }
+                        ui.close_menu();
+                    }
+                });
+
                 // Show file status
                 if let Some(buffer_id) = self.active_buffer_id {
                     if let Some(buffer) = self.buffers.get(&buffer_id) {
@@ -236,6 +294,38 @@ impl LalaApp {
             });
         });
 
+        // Main editor with optional preview
+        if self.show_preview && self.preview_mode != PreviewMode::None {
+            // Split view: Editor on left, Preview on right
+            egui::SidePanel::right("preview_panel")
+                .default_width(ctx.available_rect().width() * 0.5)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.heading("Preview");
+                    ui.separator();
+
+                    egui::ScrollArea::vertical()
+                        .auto_shrink([false; 2])
+                        .show(ui, |ui| {
+                            match self.preview_mode {
+                                PreviewMode::Markdown => {
+                                    markdown_preview::render_markdown_preview(ui, &self.current_text);
+                                }
+                                PreviewMode::Html => {
+                                    self.render_html_preview(ui);
+                                }
+                                PreviewMode::Latex => {
+                                    self.render_latex_preview(ui);
+                                }
+                                PreviewMode::Mermaid => {
+                                    self.render_mermaid_preview(ui);
+                                }
+                                PreviewMode::None => {}
+                            }
+                        });
+                });
+        }
+
         // Main editor - NO PADDING
         egui::CentralPanel::default()
             .frame(egui::Frame::none()) // Remove all frames and padding
@@ -255,9 +345,99 @@ impl LalaApp {
 
                         if response.changed() {
                             self.text_changed = true;
+                            // Update preview mode if needed
+                            if self.show_preview {
+                                self.preview_mode = self.detect_preview_mode();
+                            }
                         }
                     });
             });
+    }
+
+    fn render_html_preview(&self, ui: &mut egui::Ui) {
+        ui.heading("HTML Preview");
+        ui.separator();
+
+        // Parse HTML and display as formatted text
+        use scraper::{Html, Selector};
+
+        let document = Html::parse_document(&self.current_text);
+
+        // Extract and display title
+        if let Ok(selector) = Selector::parse("title") {
+            for element in document.select(&selector) {
+                ui.heading(element.text().collect::<String>());
+                ui.separator();
+            }
+        }
+
+        // Extract and display body content
+        if let Ok(selector) = Selector::parse("body") {
+            for element in document.select(&selector) {
+                let text = element.text().collect::<Vec<_>>().join(" ");
+                ui.label(text);
+            }
+        } else {
+            // If no body tag, just show all text
+            ui.label(&self.current_text);
+        }
+    }
+
+    fn render_latex_preview(&self, ui: &mut egui::Ui) {
+        ui.heading("LaTeX Preview");
+        ui.separator();
+
+        // Simple LaTeX rendering with Unicode substitution
+        let mut preview_text = self.current_text.clone();
+
+        // Common LaTeX symbols to Unicode
+        let substitutions = vec![
+            (r"\alpha", "α"), (r"\beta", "β"), (r"\gamma", "γ"), (r"\delta", "δ"),
+            (r"\epsilon", "ε"), (r"\theta", "θ"), (r"\lambda", "λ"), (r"\mu", "μ"),
+            (r"\pi", "π"), (r"\sigma", "σ"), (r"\phi", "φ"), (r"\omega", "ω"),
+            (r"\sqrt", "√"), (r"\int", "∫"), (r"\sum", "∑"), (r"\prod", "∏"),
+            (r"\partial", "∂"), (r"\nabla", "∇"), (r"\infty", "∞"),
+            (r"\pm", "±"), (r"\times", "×"), (r"\div", "÷"),
+            (r"\leq", "≤"), (r"\geq", "≥"), (r"\neq", "≠"), (r"\approx", "≈"),
+        ];
+
+        for (latex, unicode) in substitutions {
+            preview_text = preview_text.replace(latex, unicode);
+        }
+
+        ui.label(&preview_text);
+    }
+
+    fn render_mermaid_preview(&self, ui: &mut egui::Ui) {
+        ui.heading("Mermaid Diagram");
+        ui.separator();
+
+        // Simple ASCII art rendering
+        ui.label("Diagram Preview:");
+        ui.separator();
+
+        let lines: Vec<&str> = self.current_text.lines().collect();
+
+        for line in lines {
+            let trimmed = line.trim();
+            if trimmed.is_empty() || trimmed.starts_with("graph") || trimmed.starts_with("flowchart") {
+                continue;
+            }
+
+            // Simple node rendering
+            if trimmed.contains("-->") || trimmed.contains("->") {
+                let parts: Vec<&str> = trimmed.split("-->").collect();
+                if parts.len() == 2 {
+                    ui.horizontal(|ui| {
+                        ui.monospace(format!("[{}]", parts[0].trim()));
+                        ui.label("→");
+                        ui.monospace(format!("[{}]", parts[1].trim()));
+                    });
+                }
+            } else {
+                ui.monospace(trimmed);
+            }
+        }
     }
 
     fn show_file_dialog(&mut self, ctx: &egui::Context) {

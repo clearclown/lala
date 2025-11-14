@@ -46,12 +46,21 @@ A modern, lightweight text editor with **both GUI and CLI** built with Rust, egu
 - **Color Themes**: Syntax highlighting with customizable themes
 - **Multiple Languages**: Support for various programming languages via syntect
 
-### 📖 Multi-Format Preview
-- **Markdown Preview**: GitHub-style rendering with rich formatting
-- **HTML Preview**: Beautiful HTML display with tables, lists, and links
-- **Mermaid Diagrams**: ASCII art flowcharts, sequence diagrams, and more
-- **LaTeX Documents**: Unicode math symbols (√, ∫, ∑, α, β, etc.)
-- **Terminal Rendering**: All formats viewable in CLI with color support
+### 📖 Multi-Format Preview (GUI & CLI)
+- **Markdown Preview**:
+  - GUI: GitHub-style rendering with rich formatting in split view
+  - CLI: Terminal rendering with color support
+- **HTML Preview**:
+  - GUI: Formatted text display with element extraction
+  - CLI: Beautiful HTML display with tables, lists, and links
+- **Mermaid Diagrams**:
+  - GUI: Visual diagram rendering
+  - CLI: ASCII art flowcharts, sequence diagrams, and more
+- **LaTeX Documents**:
+  - GUI: Unicode math symbols (√, ∫, ∑, α, β, etc.) with live preview
+  - CLI: Terminal rendering with Unicode symbols
+- **Split View**: Edit on left, preview on right (Ctrl+P to toggle)
+- **Auto-Detection**: Automatically detects file type (.md, .html, .tex, .mmd)
 - **Pure Rust**: No WebView dependencies, rendered directly with egui or terminal
 
 ## Architecture
@@ -223,10 +232,15 @@ Core dependencies:
 
 ## Keyboard Shortcuts
 
-### Editor (GUI Mode)
+### File Operations (GUI Mode)
+- **Ctrl+N**: New file
+- **Ctrl+O**: Open file
 - **Ctrl+S**: Save file
-- **Ctrl+Z**: Undo (planned)
-- **Ctrl+Y** or **Ctrl+Shift+Z**: Redo (planned)
+- **Ctrl+Shift+S**: Save as
+- **Ctrl+P**: Toggle preview panel
+- **Ctrl+F**: Find
+- **Ctrl+H**: Replace
+- **Ctrl+Shift+F**: Grep search
 
 ### Navigation (GUI Mode)
 - **Arrow Keys**: Move cursor
