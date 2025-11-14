@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lala Editor - Modern text editor with multi-format preview support">
+    <meta name="keywords" content="text editor, markdown, latex, mermaid, html, rust, gui, cli">
+    <title>Lala Editor - Modern Text Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            padding: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #667eea;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 6rem 0;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            padding: 4rem 0;
+            background: white;
+        }
+
+        .section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #667eea;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature {
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .install-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .install-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .install-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .install-card code {
+            display: block;
+            background: #f4f4f4;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin-top: 0.5rem;
+            word-break: break-all;
+        }
+
+        .languages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .language-badge {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .language-badge:hover {
+            background: #764ba2;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #555;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">🎨 Lala Editor</div>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#install">Install</a></li>
+                <li><a href="#docs">Docs</a></li>
+                <li><a href="https://github.com/yourusername/lala">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Lala Editor</h1>
+            <p>Modern text editor with multi-format preview support</p>
+            <div class="cta-buttons">
+                <a href="#install" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/yourusername/lala" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <h3>Markdown Preview</h3>
+                    <p>Beautiful GitHub-style Markdown rendering with syntax highlighting and live preview.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3>HTML Support</h3>
+                    <p>View HTML files with rich formatting, tables, lists, and more.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Mermaid Diagrams</h3>
+                    <p>Create flowcharts, sequence diagrams, and more with ASCII art rendering.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📐</div>
+                    <h3>LaTeX Documents</h3>
+                    <p>Preview LaTeX with Unicode math symbols (√, ∫, ∑, α, β, etc.).</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🖥️</div>
+                    <h3>GUI & CLI</h3>
+                    <p>Use the graphical interface or powerful command-line tools.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Pure Rust</h3>
+                    <p>Fast, safe, and efficient. No WebView dependencies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="section">
+        <div class="container">
+            <h2>Installation</h2>
+            <div class="install-methods">
+                <div class="install-card">
+                    <h3>Cargo</h3>
+                    <p>Rust Package Manager</p>
+                    <code>cargo install lala</code>
+                </div>
+                <div class="install-card">
+                    <h3>Homebrew</h3>
+                    <p>macOS / Linux</p>
+                    <code>brew install lala</code>
+                </div>
+                <div class="install-card">
+                    <h3>APT</h3>
+                    <p>Debian / Ubuntu</p>
+                    <code>sudo apt install lala</code>
+                </div>
+                <div class="install-card">
+                    <h3>Pacman</h3>
+                    <p>Arch Linux</p>
+                    <code>yay -S lala</code>
+                </div>
+                <div class="install-card">
+                    <h3>DNF</h3>
+                    <p>Fedora / RHEL</p>
+                    <code>sudo dnf install lala</code>
+                </div>
+                <div class="install-card">
+                    <h3>Chocolatey</h3>
+                    <p>Windows</p>
+                    <code>choco install lala</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="docs" class="section">
+        <div class="container">
+            <h2>Documentation</h2>
+            <div class="languages">
+                <a href="../README.md" class="language-badge">🇬🇧 English</a>
+                <a href="../README_ja.md" class="language-badge">🇯🇵 日本語</a>
+                <a href="../README_fa.md" class="language-badge">🇮🇷 فارسی</a>
+                <a href="../README_ar.md" class="language-badge">🇸🇦 العربية</a>
+                <a href="../README_zh-CN.md" class="language-badge">🇨🇳 简体中文</a>
+                <a href="../README_zh-TW.md" class="language-badge">🇹🇼 繁體中文</a>
+                <a href="../README_ru.md" class="language-badge">🇷🇺 Русский</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Lala Editor</h3>
+                    <p>Modern text editor with multi-format preview support built with Rust.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="https://github.com/yourusername/lala">GitHub</a></li>
+                        <li><a href="https://crates.io/crates/lala">Crates.io</a></li>
+                        <li><a href="../en/install.md">Installation Guide</a></li>
+                        <li><a href="../community/CONTRIBUTING.md">Contributing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="../ja/初心者ガイド.md">Beginner's Guide</a></li>
+                        <li><a href="../ja/CLI使い方.md">CLI Usage</a></li>
+                        <li><a href="../development/publishing-guide.md">Publishing Guide</a></li>
+                        <li><a href="../CHANGELOG.md">Changelog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <ul>
+                        <li><a href="https://github.com/yourusername/lala/issues">Issue Tracker</a></li>
+                        <li><a href="https://github.com/yourusername/lala/discussions">Discussions</a></li>
+                        <li><a href="../community/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+                        <li><a href="../community/SECURITY.md">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Lala Contributors. Licensed under MIT OR Apache-2.0.</p>
+                <p>Made with ❤️ by the Lala community</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
