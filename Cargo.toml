@@ -3,6 +3,19 @@ name = "lala"
 version = "0.1.0"
 edition = "2021"
 authors = ["lala contributors"]
+description = "A modern, lightweight text editor with GUI and CLI support for Markdown, HTML, Mermaid, and LaTeX"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/lala"
+homepage = "https://github.com/yourusername/lala"
+documentation = "https://github.com/yourusername/lala/blob/main/README.md"
+keywords = ["editor", "markdown", "latex", "mermaid", "html"]
+categories = ["command-line-utilities", "text-editors", "visualization"]
+readme = "README.md"
+exclude = [
+    "tests/fixtures/*",
+    ".git*",
+    ".github/*",
+]
 
 [[bin]]
 name = "lala"

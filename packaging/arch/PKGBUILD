@@ -1,0 +1,41 @@
+# Maintainer: Lala Contributors <your-email@example.com>
+pkgname=lala
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Modern text editor with multi-format preview support (Markdown, HTML, Mermaid, LaTeX)"
+arch=('x86_64')
+url="https://github.com/yourusername/lala"
+license=('MIT' 'Apache')
+depends=('gcc-libs' 'libxcb')
+makedepends=('cargo' 'rust')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/yourusername/lala/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')  # Update with actual SHA256 hash
+
+build() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --release --locked --all-features
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo test --release --locked
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+
+    # Install binary
+    install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
+
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 CLI_USAGE.md "$pkgdir/usr/share/doc/$pkgname/CLI_USAGE.md"
+    install -Dm644 FORMAT_SUPPORT.md "$pkgdir/usr/share/doc/$pkgname/FORMAT_SUPPORT.md"
+
+    # Install licenses
+    install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+    install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+}

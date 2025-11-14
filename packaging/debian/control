@@ -1,0 +1,25 @@
+Source: lala
+Section: editors
+Priority: optional
+Maintainer: Lala Contributors <your-email@example.com>
+Build-Depends: debhelper (>= 11), cargo, rustc (>= 1.70), libxcb1-dev, libxcb-render0-dev, libxcb-shape0-dev, libxcb-xfixes0-dev
+Standards-Version: 4.5.0
+Homepage: https://github.com/yourusername/lala
+Vcs-Git: https://github.com/yourusername/lala.git
+Vcs-Browser: https://github.com/yourusername/lala
+
+Package: lala
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Modern text editor with multi-format preview support
+ Lala is a lightweight text editor with both GUI and CLI interfaces.
+ It supports previewing Markdown, HTML, Mermaid diagrams, and LaTeX
+ documents with beautiful terminal formatting.
+ .
+ Features:
+  - File tree view with async loading and .gitignore support
+  - Syntax highlighting for multiple programming languages
+  - Multi-format preview: Markdown, HTML, Mermaid diagrams, LaTeX
+  - Advanced search and replace with regex support
+  - Both CLI and GUI modes for flexible usage
+  - Pure Rust implementation with no WebView dependencies
