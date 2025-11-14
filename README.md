@@ -178,7 +178,7 @@ cargo run
 ./target/release/lala latex --help
 ```
 
-**See `CLI_USAGE.md` for complete CLI documentation and `FORMAT_SUPPORT.md` for format-specific details.**
+**See [CLI Usage Guide](docs/ja/CLI使い方.md) for complete CLI documentation and [Format Support](docs/ja/フォーマット対応.md) for format-specific details.**
 
 ### Test
 ```bash
@@ -266,7 +266,7 @@ lala latex --help
 lala view --help
 ```
 
-**For detailed CLI usage, examples, and tips, see `CLI_USAGE.md` and `FORMAT_SUPPORT.md`.**
+**For detailed CLI usage, examples, and tips, see [CLI Usage Guide](docs/ja/CLI使い方.md) and [Format Support](docs/ja/フォーマット対応.md).**
 
 ## Development
 
@@ -310,14 +310,74 @@ Planned features:
 - Minimap view
 - LSP (Language Server Protocol) support
 
+## Installation
+
+### Quick Install
+
+```bash
+# Cargo (Recommended)
+cargo install lala
+
+# Universal installer (Linux/macOS)
+curl -sSL https://raw.githubusercontent.com/yourusername/lala/main/packaging/scripts/install.sh | bash
+
+# Homebrew (macOS)
+brew install lala
+
+# APT (Debian/Ubuntu)
+sudo apt install lala
+
+# Pacman (Arch Linux)
+yay -S lala
+
+# Chocolatey (Windows)
+choco install lala
+```
+
+For detailed installation instructions, see [Installation Guide](docs/ja/インストール.md).
+
+## Documentation
+
+### For Users
+- 📖 [Installation Guide](docs/ja/インストール.md) - Complete installation instructions
+- 🚀 [Beginner's Guide](docs/ja/初心者ガイド.md) - Start here if you're new to Lala
+- 💻 [CLI Usage Guide](docs/ja/CLI使い方.md) - Command-line interface documentation
+- 📝 [Format Support](docs/ja/フォーマット対応.md) - Supported formats and rendering details
+
+### For Developers
+- 🏗️ [Implementation Details](docs/development/implementation.md) - Architecture and design
+- 📋 [Project Status](docs/development/project-status.md) - Current development status
+- 🔧 [CLI Design](docs/development/cli-design.md) - CLI architecture
+
+### For Contributors
+- 🤝 [Contributing Guidelines](docs/community/CONTRIBUTING.md) - How to contribute
+- 📜 [Code of Conduct](docs/community/CODE_OF_CONDUCT.md) - Community standards
+- 🔒 [Security Policy](docs/community/SECURITY.md) - Reporting security issues
+- 📰 [Changelog](docs/CHANGELOG.md) - Release history
+
+### Package Maintainers
+- 📦 [Publishing Guide](docs/development/publishing-guide.md) - How to publish to package managers
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+We welcome contributions! Please read our [Contributing Guidelines](docs/community/CONTRIBUTING.md) before submitting pull requests.
 
 ## License
 
-(Add your license information here)
+This project is dual-licensed under:
+- MIT License ([LICENSE-MIT](LICENSE-MIT))
+- Apache License 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
 
-## Authors
+You may choose either license.
 
-Created by lala contributors
+## Links
+
+- 🏠 [Homepage](https://github.com/yourusername/lala)
+- 📦 [Crates.io](https://crates.io/crates/lala)
+- 📖 [Documentation](https://github.com/yourusername/lala/tree/main/docs)
+- 🐛 [Issue Tracker](https://github.com/yourusername/lala/issues)
+- 💬 [Discussions](https://github.com/yourusername/lala/discussions)
+
+---
+
+Made with ❤️ by the Lala community
