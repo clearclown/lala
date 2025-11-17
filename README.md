@@ -94,7 +94,26 @@ cargo install lala --features llm
 
 **Rustのインストール**: https://rustup.rs/
 
-### 方法2: GitHub Releasesからバイナリをダウンロード
+### 方法2: Homebrew (macOS/Linux)
+
+Homebrewを使用している場合：
+
+```bash
+# Tapを追加
+brew tap clearclown/lala
+
+# インストール
+brew install lala
+
+# アップデート
+brew upgrade lala
+
+# アンインストール
+brew uninstall lala
+brew untap clearclown/lala
+```
+
+### 方法3: GitHub Releasesからバイナリをダウンロード
 
 Rustをインストールしたくない場合は、プリコンパイル済みバイナリを使用：
 
@@ -119,7 +138,7 @@ sudo mv lala /usr/local/bin/
 # lala-windows-x86_64.exe をダウンロード
 ```
 
-### 方法3: ソースからビルド
+### 方法4: ソースからビルド
 
 開発者向け：
 

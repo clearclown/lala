@@ -81,16 +81,35 @@ Lala solves these problems.
 ## 📦 Installation
 
 ### Prerequisites
-- Rust 1.70 or higher
+- Rust 1.70 or higher (for building from source)
 - Cargo (included with Rust toolchain)
 
-### Install from Cargo (Recommended)
+### Method 1: Homebrew (macOS/Linux)
+
+If you have Homebrew installed:
+
+```bash
+# Add the tap
+brew tap clearclown/lala
+
+# Install
+brew install lala
+
+# Upgrade
+brew upgrade lala
+
+# Uninstall
+brew uninstall lala
+brew untap clearclown/lala
+```
+
+### Method 2: Install from Cargo (Recommended)
 
 ```bash
 cargo install lala
 ```
 
-### Build from Source
+### Method 3: Build from Source
 
 ```bash
 # Clone repository
