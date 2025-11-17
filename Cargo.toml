@@ -132,3 +132,20 @@ assets = [
     ["lala.desktop", "usr/share/applications/", "644"],
     ["assets/icon.png", "usr/share/pixmaps/lala.png", "644"],
 ]
+
+[package.metadata.generate-rpm]
+# パッケージの基本情報
+name = "lala"
+summary = "Modern, lightweight multi-format text editor"
+license = "MIT OR Apache-2.0"
+
+# アセット（インストールするファイル）
+assets = [
+    { source = "target/release/lala", dest = "/usr/bin/lala", mode = "755" },
+    { source = "README.md", dest = "/usr/share/doc/lala/README.md", mode = "644" },
+    { source = "docs/readmeLangs/README_en.md", dest = "/usr/share/doc/lala/README_en.md", mode = "644" },
+    { source = "LICENSE-MIT", dest = "/usr/share/licenses/lala/LICENSE-MIT", mode = "644" },
+    { source = "LICENSE-APACHE", dest = "/usr/share/licenses/lala/LICENSE-APACHE", mode = "644" },
+    { source = "lala.desktop", dest = "/usr/share/applications/lala.desktop", mode = "644" },
+    { source = "assets/icon.png", dest = "/usr/share/pixmaps/lala.png", mode = "644" },
+]

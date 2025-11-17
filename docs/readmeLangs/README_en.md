@@ -123,13 +123,107 @@ Uninstall:
 sudo apt remove lala
 ```
 
-### Method 3: Install from Cargo (Recommended)
+### Method 3: Arch Linux (AUR)
+
+For Arch Linux, Manjaro, EndeavourOS and other Arch-based distributions:
+
+```bash
+# Using yay
+yay -S lala
+
+# Using paru
+paru -S lala
+
+# Manual installation
+git clone https://aur.archlinux.org/lala.git
+cd lala
+makepkg -si
+```
+
+Upgrade:
+```bash
+yay -Syu lala
+```
+
+Uninstall:
+```bash
+sudo pacman -R lala
+```
+
+### Method 4: Fedora/RHEL (.rpm)
+
+For Fedora, RHEL, CentOS, openSUSE and other Red Hat-based distributions:
+
+```bash
+# Download the .rpm package
+wget https://github.com/clearclown/lala/releases/latest/download/lala-0.1.0-1.x86_64.rpm
+
+# Install (using dnf)
+sudo dnf install lala-0.1.0-1.x86_64.rpm
+
+# Or, install directly with rpm
+sudo rpm -ivh lala-0.1.0-1.x86_64.rpm
+```
+
+Upgrade:
+```bash
+sudo dnf upgrade lala-0.1.0-1.x86_64.rpm
+# Or
+sudo rpm -Uvh lala-0.1.0-1.x86_64.rpm
+```
+
+Uninstall:
+```bash
+sudo dnf remove lala
+# Or
+sudo rpm -e lala
+```
+
+### Method 5: Install from Cargo (Recommended)
 
 ```bash
 cargo install lala
 ```
 
-### Method 4: Build from Source
+### Method 6: Windows (.exe Installer)
+
+For Windows users, we provide two installation options:
+
+#### Option A: Installer (Recommended)
+
+1. Download `lala-setup-0.1.0.exe` from [GitHub Releases](https://github.com/clearclown/lala/releases/latest)
+2. Double-click the downloaded file to run
+3. Follow the installation wizard
+4. Launch "Lala" from the Start Menu
+
+**Features**:
+- Automatic Start Menu integration
+- Includes uninstaller
+- Requires administrator privileges
+
+**Note**: Since this is built without code signing, Windows Defender may show a "Windows protected your PC" warning. If this occurs, click "More info" → "Run anyway".
+
+#### Option B: Portable Version (No Installation Required)
+
+1. Download `lala-windows-x86_64.exe` from [GitHub Releases](https://github.com/clearclown/lala/releases/latest)
+2. Place in any folder
+3. Double-click to launch, or run from command line
+
+**Features**:
+- No installation required
+- Portable (can be run from USB drives)
+- No administrator privileges required
+
+#### Uninstallation
+
+**Installer Version**:
+- Control Panel → Programs and Features → Lala → Uninstall
+- Or, Start Menu → Lala → Uninstall
+
+**Portable Version**:
+- Simply delete the executable file
+
+### Method 7: Build from Source
 
 ```bash
 # Clone repository

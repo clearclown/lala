@@ -133,9 +133,103 @@ sudo apt --fix-broken install
 sudo apt remove lala
 ```
 
-### 方法4: GitHub Releasesからバイナリをダウンロード
+### 方法4: Arch Linux (AUR)
 
-Rustをインストールしたくない場合は、プリコンパイル済みバイナリを使用：
+Arch Linux、Manjaro、EndeavourOSなどでは、AURからインストールできます：
+
+```bash
+# yayを使用
+yay -S lala
+
+# paruを使用
+paru -S lala
+
+# 手動インストール
+git clone https://aur.archlinux.org/lala.git
+cd lala
+makepkg -si
+```
+
+アップデート：
+```bash
+yay -Syu lala
+```
+
+アンインストール：
+```bash
+sudo pacman -R lala
+```
+
+### 方法5: Fedora/RHEL (.rpm)
+
+Fedora、RHEL、CentOS、openSUSEなどのRed Hat系ディストリビューションでは、.rpmパッケージを使用：
+
+```bash
+# .rpmパッケージをダウンロード
+wget https://github.com/clearclown/lala/releases/latest/download/lala-0.1.0-1.x86_64.rpm
+
+# インストール（dnf使用）
+sudo dnf install lala-0.1.0-1.x86_64.rpm
+
+# または、rpmコマンドで直接インストール
+sudo rpm -ivh lala-0.1.0-1.x86_64.rpm
+```
+
+アップグレード：
+```bash
+sudo dnf upgrade lala-0.1.0-1.x86_64.rpm
+# または
+sudo rpm -Uvh lala-0.1.0-1.x86_64.rpm
+```
+
+アンインストール：
+```bash
+sudo dnf remove lala
+# または
+sudo rpm -e lala
+```
+
+### 方法6: Windows (.exe インストーラー)
+
+Windows向けには、2つのインストール方法を提供しています：
+
+#### Option A: インストーラー版（推奨）
+
+1. [GitHub Releases](https://github.com/clearclown/lala/releases/latest)から `lala-setup-0.1.0.exe` をダウンロード
+2. ダウンロードしたファイルをダブルクリックして実行
+3. インストールウィザードに従ってインストール
+4. スタートメニューから「Lala」を起動
+
+**特徴**：
+- スタートメニューに自動登録
+- アンインストーラー付属
+- 管理者権限が必要
+
+**注意**: 証明書なしでビルドされているため、Windows Defenderで「Windows protected your PC」という警告が表示される場合があります。その場合は「詳細情報」→「実行」をクリックしてください。
+
+#### Option B: ポータブル版（インストール不要）
+
+1. [GitHub Releases](https://github.com/clearclown/lala/releases/latest)から `lala-windows-x86_64.exe` をダウンロード
+2. 任意のフォルダに配置
+3. ダブルクリックして起動、またはコマンドラインから実行
+
+**特徴**：
+- インストール不要
+- USBメモリなどで持ち運び可能
+- 管理者権限不要
+
+#### アンインストール
+
+**インストーラー版**：
+- コントロールパネル → プログラムと機能 → Lala → アンインストール
+- または、スタートメニュー → Lala → Uninstall
+
+**ポータブル版**：
+- 実行ファイルを削除するだけ
+
+### 方法7: GitHub Releasesからバイナリをダウンロード（Linux/macOS）
+
+パッケージマネージャーを使いたくない場合は、プリコンパイル済みバイナリを使用：
 
 ```bash
 # Linux x86_64
@@ -152,13 +246,11 @@ sudo mv lala /usr/local/bin/
 curl -L https://github.com/clearclown/lala/releases/latest/download/lala-macos-aarch64 -o lala
 chmod +x lala
 sudo mv lala /usr/local/bin/
-
-# Windows
-# https://github.com/clearclown/lala/releases/latest から
-# lala-windows-x86_64.exe をダウンロード
 ```
 
-### 方法5: ソースからビルド
+**Windows**: 上記の「方法6: Windows (.exe インストーラー)」を参照してください。
+
+### 方法8: ソースからビルド
 
 開発者向け：
 
