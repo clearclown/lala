@@ -26,9 +26,9 @@ fn test_gemini_client_with_empty_api_key() {
     std::env::set_var("GEMINI_API_KEY", "");
 
     let result = GeminiClient::from_env();
-    // Empty string is technically set, so client creation succeeds
-    // But API calls would fail
-    assert!(result.is_ok() || result.is_err());
+    // Empty API key should now fail due to validation
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("API key cannot be empty"));
 }
 
 #[test]
@@ -177,10 +177,5 @@ fn test_special_characters_in_markdown() {
 }
 
 // === Cleanup ===
-
-#[test]
-fn test_cleanup_env_vars() {
-    // Clean up environment variables after tests
-    std::env::remove_var("GEMINI_API_KEY");
-    assert!(std::env::var("GEMINI_API_KEY").is_err());
-}
+// Note: No cleanup test needed - tests run in parallel and shouldn't
+// rely on global state being cleaned up

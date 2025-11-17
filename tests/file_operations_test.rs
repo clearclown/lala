@@ -329,8 +329,8 @@ fn test_many_small_files() {
 
     // Create 100 small files
     for i in 0..100 {
-        let file_path = temp_dir.path().join(format!("file_{}.txt", i));
-        fs::write(&file_path, format!("Content {}", i)).unwrap();
+        let file_path = temp_dir.path().join(format!("file_{i}.txt"));
+        fs::write(&file_path, format!("Content {i}")).unwrap();
     }
 
     let entries: Vec<_> = fs::read_dir(temp_dir.path()).unwrap().collect();
@@ -344,7 +344,7 @@ fn test_deep_directory_structure() {
     // Create deep nested structure (10 levels)
     let mut path = PathBuf::from(temp_dir.path());
     for i in 0..10 {
-        path = path.join(format!("level{}", i));
+        path = path.join(format!("level{i}"));
     }
 
     fs::create_dir_all(&path).unwrap();

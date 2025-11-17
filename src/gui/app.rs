@@ -236,7 +236,7 @@ impl LalaApp {
             if let Some(file_path) = file_path {
                 // Save to existing file
                 if let Err(e) = std::fs::write(&file_path, &self.current_text) {
-                    eprintln!("Failed to save file: {}", e);
+                    eprintln!("Failed to save file: {e}");
                 } else {
                     // Update buffer and mark as clean
                     if let Some(buffer) = self.buffers.get_mut(&buffer_id) {
@@ -259,7 +259,7 @@ impl LalaApp {
         if let Some(buffer_id) = self.active_buffer_id {
             // Save to new file
             if let Err(e) = std::fs::write(&path, &self.current_text) {
-                eprintln!("Failed to save file: {}", e);
+                eprintln!("Failed to save file: {e}");
             } else {
                 // Update buffer with new path and mark as clean
                 if let Some(buffer) = self.buffers.get_mut(&buffer_id) {
@@ -359,7 +359,7 @@ impl LalaApp {
                                     self.text_changed = true;
                                 }
                                 Err(e) => {
-                                    eprintln!("LLM Error: {}", e);
+                                    eprintln!("LLM Error: {e}");
                                 }
                             }
                         }
@@ -380,7 +380,7 @@ impl LalaApp {
                                     self.text_changed = true;
                                 }
                                 Err(e) => {
-                                    eprintln!("LLM Error: {}", e);
+                                    eprintln!("LLM Error: {e}");
                                 }
                             }
                         }
@@ -401,7 +401,7 @@ impl LalaApp {
                                     self.text_changed = true;
                                 }
                                 Err(e) => {
-                                    eprintln!("LLM Error: {}", e);
+                                    eprintln!("LLM Error: {e}");
                                 }
                             }
                         }
@@ -498,7 +498,7 @@ impl LalaApp {
 
                         let dirty_marker = if self.text_changed { " *" } else { "" };
                         ui.separator();
-                        ui.label(format!("{}{}", file_name, dirty_marker));
+                        ui.label(format!("{file_name}{dirty_marker}"));
                     }
                 }
             });
@@ -509,7 +509,7 @@ impl LalaApp {
             ui.horizontal(|ui| {
                 let lines = self.current_text.lines().count();
                 let chars = self.current_text.len();
-                ui.label(format!("Lines: {} | Characters: {}", lines, chars));
+                ui.label(format!("Lines: {lines} | Characters: {chars}"));
 
                 if self.text_changed {
                     ui.label("| Modified");
@@ -548,8 +548,21 @@ impl LalaApp {
         }
 
         // Main editor - NO PADDING
+        // Set background color and text color based on theme
+        let (bg_color, text_color) = if self.is_light_theme {
+            (
+                egui::Color32::from_rgb(255, 255, 255), // White background
+                egui::Color32::from_rgb(0, 0, 0),       // Black text
+            )
+        } else {
+            (
+                egui::Color32::from_rgb(30, 30, 30),    // Dark gray background
+                egui::Color32::from_rgb(255, 255, 255), // White text
+            )
+        };
+
         egui::CentralPanel::default()
-            .frame(egui::Frame::NONE) // Remove all frames and padding
+            .frame(egui::Frame::default().fill(bg_color).inner_margin(0.0)) // Set background color, no padding
             .show(ctx, |ui| {
                 let available_height = ui.available_height();
 
@@ -559,13 +572,6 @@ impl LalaApp {
                         // TextEdit in egui 0.33+ automatically supports IME on all platforms
                         // No manual IME configuration is needed
 
-                        // Set background color based on theme
-                        let bg_color = if self.is_light_theme {
-                            egui::Color32::from_rgb(255, 255, 255) // White for light theme
-                        } else {
-                            egui::Color32::from_rgb(30, 30, 30) // Dark gray for dark theme
-                        };
-
                         let response = ui.add(
                             egui::TextEdit::multiline(&mut self.current_text)
                                 .font(egui::TextStyle::Monospace)
@@ -573,6 +579,7 @@ impl LalaApp {
                                 .min_size(egui::vec2(f32::INFINITY, available_height))
                                 .frame(false) // No frame around text edit
                                 .background_color(bg_color)
+                                .text_color(text_color),
                         );
 
                         // Request focus on first frame to ensure IME works immediately
@@ -838,7 +845,9 @@ impl LalaApp {
                             .desired_width(300.0),
                     );
 
-                    if ui.button("Apply").clicked() || response.lost_focus() && !self.api_key_input.is_empty() {
+                    if ui.button("Apply").clicked()
+                        || response.lost_focus() && !self.api_key_input.is_empty()
+                    {
                         // Try to create client with new API key
                         match GeminiClient::new(self.api_key_input.clone()) {
                             Ok(client) => {
@@ -847,7 +856,7 @@ impl LalaApp {
                                 self.ai_enabled = true;
                             }
                             Err(e) => {
-                                self.llm_status = format!("Error: {}", e);
+                                self.llm_status = format!("Error: {e}");
                                 self.llm_client = None;
                             }
                         }
@@ -940,7 +949,7 @@ impl LalaApp {
 
                         for (name, path_opt) in paths {
                             if let Some(path) = path_opt {
-                                if ui.button(format!("📂 {}", name)).clicked() {
+                                if ui.button(format!("📂 {name}")).clicked() {
                                     self.file_path_input = path.display().to_string() + "/";
                                 }
                             }
@@ -1010,7 +1019,6 @@ impl eframe::App for LalaApp {
 
         // Show grep panel
         if self.show_grep_panel {
-            let mut open = self.show_grep_panel;
             self.grep_panel.show(
                 ctx,
                 &mut self.grep_engine,
@@ -1018,9 +1026,8 @@ impl eframe::App for LalaApp {
                 &mut self.buffers,
                 &mut self.active_buffer_id,
                 &mut self.next_buffer_id,
-                &mut open,
+                &mut self.show_grep_panel,
             );
-            self.show_grep_panel = open;
         }
 
         // Show file dialog

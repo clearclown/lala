@@ -160,7 +160,7 @@ impl Buffer {
     /// Convert a character index to a Position
     pub fn char_idx_to_position(&self, char_idx: usize) -> Result<Position, String> {
         if char_idx > self.rope.len_chars() {
-            return Err(format!("Character index {} out of bounds", char_idx));
+            return Err(format!("Character index {char_idx} out of bounds"));
         }
 
         let line = self.rope.char_to_line(char_idx);

@@ -82,13 +82,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         StartupMode::MarkdownPreview { file, no_color } => {
             // Read markdown file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
-                eprintln!("Error reading file {:?}: {}", file, err);
+                eprintln!("Error reading file {file:?}: {err}");
                 process::exit(1);
             });
 
             // Render to terminal
             if no_color {
-                println!("{}", content);
+                println!("{content}");
             } else {
                 markdown_view::render_markdown_to_terminal(&content);
             }
@@ -99,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         StartupMode::HtmlPreview { file, no_color } => {
             // Read HTML file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
-                eprintln!("Error reading file {:?}: {}", file, err);
+                eprintln!("Error reading file {file:?}: {err}");
                 process::exit(1);
             });
 
@@ -116,7 +116,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         StartupMode::MermaidPreview { file, no_color } => {
             // Read Mermaid file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
-                eprintln!("Error reading file {:?}: {}", file, err);
+                eprintln!("Error reading file {file:?}: {err}");
                 process::exit(1);
             });
 
@@ -133,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         StartupMode::LatexPreview { file, no_color } => {
             // Read LaTeX file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
-                eprintln!("Error reading file {:?}: {}", file, err);
+                eprintln!("Error reading file {file:?}: {err}");
                 process::exit(1);
             });
 
@@ -150,7 +150,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         StartupMode::ViewFile { file, line_numbers } => {
             // Read file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
-                eprintln!("Error reading file {:?}: {}", file, err);
+                eprintln!("Error reading file {file:?}: {err}");
                 process::exit(1);
             });
 
@@ -160,7 +160,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     println!("{:>6} {}", i + 1, line);
                 }
             } else {
-                print!("{}", content);
+                print!("{content}");
             }
 
             return Ok(());

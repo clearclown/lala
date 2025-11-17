@@ -45,10 +45,10 @@ pub fn search_in_buffer(
         for mat in regex.find_iter(&content) {
             let start_pos = buffer
                 .char_idx_to_position(mat.start())
-                .map_err(|e| format!("Failed to convert start position: {}", e))?;
+                .map_err(|e| format!("Failed to convert start position: {e}"))?;
             let end_pos = buffer
                 .char_idx_to_position(mat.end())
-                .map_err(|e| format!("Failed to convert end position: {}", e))?;
+                .map_err(|e| format!("Failed to convert end position: {e}"))?;
 
             results.push(SearchResult {
                 range: Range::new(start_pos, end_pos),
@@ -76,10 +76,10 @@ pub fn search_in_buffer(
 
             let start_pos = buffer
                 .char_idx_to_position(match_start)
-                .map_err(|e| format!("Failed to convert start position: {}", e))?;
+                .map_err(|e| format!("Failed to convert start position: {e}"))?;
             let end_pos = buffer
                 .char_idx_to_position(match_end)
-                .map_err(|e| format!("Failed to convert end position: {}", e))?;
+                .map_err(|e| format!("Failed to convert end position: {e}"))?;
 
             results.push(SearchResult {
                 range: Range::new(start_pos, end_pos),
@@ -132,7 +132,7 @@ fn build_regex(pattern: &str, options: &SearchOptions) -> Result<Regex, String> 
     RegexBuilder::new(pattern)
         .case_insensitive(!options.case_sensitive)
         .build()
-        .map_err(|e| format!("Invalid regex pattern: {}", e))
+        .map_err(|e| format!("Invalid regex pattern: {e}"))
 }
 
 #[cfg(test)]

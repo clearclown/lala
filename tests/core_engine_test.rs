@@ -110,7 +110,7 @@ fn test_very_long_line() {
 #[test]
 fn test_many_lines() {
     let text = (0..1000)
-        .map(|i| format!("Line {}", i))
+        .map(|i| format!("Line {i}"))
         .collect::<Vec<_>>()
         .join("\n");
     let buffer = Buffer::from_string(BufferId(0), text.clone(), None);

@@ -166,7 +166,7 @@ fn test_latex_greek_letters() {
     ];
 
     for (latex, unicode) in substitutions {
-        let input = format!("The symbol {} is important", latex);
+        let input = format!("The symbol {latex} is important");
         let output = input.replace(latex, unicode);
         assert!(output.contains(unicode));
     }
@@ -182,7 +182,7 @@ fn test_latex_math_operators() {
     ];
 
     for (latex, unicode) in substitutions {
-        let input = format!("Expression: {}", latex);
+        let input = format!("Expression: {latex}");
         let output = input.replace(latex, unicode);
         assert!(output.contains(unicode));
     }
@@ -285,7 +285,7 @@ fn test_unicode_in_markdown() {
     let events: Vec<Event> = parser.collect();
 
     // Should handle Unicode correctly
-    assert!(events.len() > 0);
+    assert!(!events.is_empty());
 
     // Check that text contains Unicode
     let has_unicode = events.iter().any(|e| {

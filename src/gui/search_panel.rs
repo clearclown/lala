@@ -172,7 +172,7 @@ impl SearchPanel {
                 self.error_message = None;
             }
             Err(e) => {
-                self.error_message = Some(format!("Search error: {}", e));
+                self.error_message = Some(format!("Search error: {e}"));
                 self.current_results.clear();
             }
         }
@@ -210,13 +210,13 @@ impl SearchPanel {
         ) {
             Ok(count) => {
                 if count > 0 {
-                    self.error_message = Some(format!("Replaced {} occurrence(s)", count));
+                    self.error_message = Some(format!("Replaced {count} occurrence(s)"));
                     // Refresh search after replace
                     self.perform_search(buffer);
                 }
             }
             Err(e) => {
-                self.error_message = Some(format!("Replace error: {}", e));
+                self.error_message = Some(format!("Replace error: {e}"));
             }
         }
     }
@@ -236,12 +236,12 @@ impl SearchPanel {
             true,
         ) {
             Ok(count) => {
-                self.error_message = Some(format!("Replaced {} occurrence(s)", count));
+                self.error_message = Some(format!("Replaced {count} occurrence(s)"));
                 // Refresh search after replace
                 self.perform_search(buffer);
             }
             Err(e) => {
-                self.error_message = Some(format!("Replace error: {}", e));
+                self.error_message = Some(format!("Replace error: {e}"));
             }
         }
     }

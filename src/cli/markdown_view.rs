@@ -45,16 +45,16 @@ fn render_events(events: &[Event]) {
                         println!("{}", "-".repeat(text.len()).bright_cyan());
                     }
                     HeadingLevel::H3 => {
-                        println!("{}", format!("### {}", text).bold().green());
+                        println!("{}", format!("### {text}").bold().green());
                     }
                     HeadingLevel::H4 => {
-                        println!("{}", format!("#### {}", text).bold().yellow());
+                        println!("{}", format!("#### {text}").bold().yellow());
                     }
                     HeadingLevel::H5 => {
-                        println!("{}", format!("##### {}", text).yellow());
+                        println!("{}", format!("##### {text}").yellow());
                     }
                     HeadingLevel::H6 => {
-                        println!("{}", format!("###### {}", text).dimmed());
+                        println!("{}", format!("###### {text}").dimmed());
                     }
                 }
                 println!(); // Empty line after heading
@@ -72,7 +72,7 @@ fn render_events(events: &[Event]) {
             Event::Start(Tag::Paragraph) => {
                 i += 1;
                 let text = extract_styled_text_until_end(&events[i..], TagEnd::Paragraph);
-                print!("{}", text);
+                print!("{text}");
                 println!();
                 println!(); // Empty line after paragraph
 
@@ -108,7 +108,7 @@ fn render_events(events: &[Event]) {
                 } else {
                     print!("  {} ", "•".bright_green());
                 }
-                println!("{}", text);
+                println!("{text}");
 
                 // Skip to end tag
                 while i < events.len() {
@@ -133,7 +133,7 @@ fn render_events(events: &[Event]) {
 
                 println!(); // Empty line before code
                 if !lang.is_empty() {
-                    println!("{}", format!("```{}", lang).dimmed());
+                    println!("{}", format!("```{lang}").dimmed());
                 } else {
                     println!("{}", "```".dimmed());
                 }
@@ -219,7 +219,7 @@ fn render_events(events: &[Event]) {
                 i += 1;
                 let text = extract_text_until_end(&events[i..], TagEnd::Link);
                 print!("{}", text.bright_blue().underline());
-                print!("{}", format!(" ({})", dest_url).dimmed());
+                print!("{}", format!(" ({dest_url})").dimmed());
 
                 // Skip to end tag
                 while i < events.len() {
@@ -240,7 +240,7 @@ fn render_events(events: &[Event]) {
             // Plain text (only if not inside other tags)
             Event::Text(text) => {
                 if !in_code_block && !in_list {
-                    print!("{}", text);
+                    print!("{text}");
                 }
             }
 

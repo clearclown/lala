@@ -372,7 +372,7 @@ pub fn render_mermaid_plain(mermaid_content: &str) {
     println!("Mermaid Diagram");
     println!("{}", "─".repeat(80));
     println!();
-    println!("{}", mermaid_content);
+    println!("{mermaid_content}");
     println!();
     println!("{}", "─".repeat(80));
 }

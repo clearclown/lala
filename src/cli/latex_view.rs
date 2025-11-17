@@ -125,7 +125,7 @@ fn render_sections(content: &str) {
             // Regular text
             let cleaned = clean_latex_text(line);
             if !cleaned.is_empty() {
-                println!("{}", cleaned);
+                println!("{cleaned}");
             }
         }
     }
@@ -304,7 +304,7 @@ fn render_math(math: &str) -> String {
     result = result.replace(r"\text", "");
 
     // Clean up braces
-    result = result.replace('{', "").replace('}', "");
+    result = result.replace(['{', '}'], "");
 
     result.trim().to_string()
 }
@@ -333,7 +333,7 @@ pub fn render_latex_plain(latex_content: &str) {
     println!("LaTeX Document");
     println!("{}", "─".repeat(80));
     println!();
-    println!("{}", latex_content);
+    println!("{latex_content}");
     println!();
     println!("{}", "─".repeat(80));
 }

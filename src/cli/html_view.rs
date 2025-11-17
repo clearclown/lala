@@ -16,7 +16,7 @@ pub fn render_html_to_terminal(html_content: &str) {
 
     // Try to render with custom parser first
     if let Ok(formatted) = render_html_custom(&document) {
-        print!("{}", formatted);
+        print!("{formatted}");
     } else {
         // Fallback to simple text conversion
         render_html_simple(html_content);
@@ -50,7 +50,7 @@ fn render_html_custom(document: &Html) -> Result<String, Box<dyn std::error::Err
 /// Render headings (h1-h6)
 fn render_headings(document: &Html, output: &mut String) -> Result<(), Box<dyn std::error::Error>> {
     for level in 1..=6 {
-        let selector_str = format!("h{}", level);
+        let selector_str = format!("h{level}");
         let Ok(selector) = Selector::parse(&selector_str) else {
             continue;
         };
@@ -104,7 +104,7 @@ fn render_paragraphs(
     for element in document.select(&selector) {
         let text = extract_styled_text(&element);
         if !text.trim().is_empty() {
-            writeln!(output, "{}", text)?;
+            writeln!(output, "{text}")?;
             writeln!(output)?;
         }
     }
@@ -143,7 +143,7 @@ fn extract_styled_text(element: &scraper::ElementRef) -> String {
                             result.push_str(&format!(
                                 "{} {}",
                                 inner_text.bright_blue().underline(),
-                                format!("({})", href).dimmed()
+                                format!("({href})").dimmed()
                             ));
                         } else {
                             result.push_str(&inner_text);
@@ -288,13 +288,13 @@ fn render_tables(document: &Html, output: &mut String) -> Result<(), Box<dyn std
 /// Simple HTML to text fallback
 fn render_html_simple(html_content: &str) {
     let text = html2text::from_read(html_content.as_bytes(), 80);
-    println!("{}", text);
+    println!("{text}");
 }
 
 /// Render HTML without colors (plain text)
 pub fn render_html_plain(html_content: &str) {
     let text = html2text::from_read(html_content.as_bytes(), 80);
-    println!("{}", text);
+    println!("{text}");
 }
 
 #[cfg(test)]

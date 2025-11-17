@@ -103,8 +103,7 @@ impl GeminiClient {
         #[cfg(feature = "llm")]
         {
             let prompt = format!(
-                "以下のMarkdownテキストを改善してください。文法、スタイル、読みやすさを向上させますが、内容の意味は変えないでください:\n\n{}",
-                text
+                "以下のMarkdownテキストを改善してください。文法、スタイル、読みやすさを向上させますが、内容の意味は変えないでください:\n\n{text}"
             );
             self.call_gemini(&prompt)
         }
@@ -122,13 +121,11 @@ impl GeminiClient {
         {
             let prompt = if let Some(err) = error {
                 format!(
-                    "次のコマンドがエラーを起こしました:\nコマンド: {}\nエラー: {}\n\n修正されたコマンドを提案してください（説明なしでコマンドのみ）:",
-                    command, err
+                    "次のコマンドがエラーを起こしました:\nコマンド: {command}\nエラー: {err}\n\n修正されたコマンドを提案してください（説明なしでコマンドのみ）:"
                 )
             } else {
                 format!(
-                    "次のコマンドを改善してください:\n{}\n\n改善されたコマンドを提案してください（説明なしでコマンドのみ）:",
-                    command
+                    "次のコマンドを改善してください:\n{command}\n\n改善されたコマンドを提案してください（説明なしでコマンドのみ）:"
                 )
             };
             self.call_gemini(&prompt)
@@ -161,7 +158,7 @@ impl GeminiClient {
             .post(&url)
             .json(&request)
             .send()
-            .map_err(|e| format!("Failed to send request: {}", e))?;
+            .map_err(|e| format!("Failed to send request: {e}"))?;
 
         if !response.status().is_success() {
             return Err(format!(
@@ -172,12 +169,11 @@ impl GeminiClient {
 
         let gemini_response: GeminiResponse = response
             .json()
-            .map_err(|e| format!("Failed to parse response: {}", e))?;
+            .map_err(|e| format!("Failed to parse response: {e}"))?;
 
         gemini_response
-            .candidates
-            .get(0)
-            .and_then(|c| c.content.parts.get(0))
+            .candidates.first()
+            .and_then(|c| c.content.parts.first())
             .map(|p| p.text.clone())
             .ok_or_else(|| "No response from Gemini".to_string())
     }

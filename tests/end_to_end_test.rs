@@ -199,13 +199,13 @@ fn test_multiple_buffers() {
 
     // Create multiple buffers
     for i in 0..10 {
-        let buffer = Buffer::from_string(BufferId(i), format!("Buffer {}", i), None);
+        let buffer = Buffer::from_string(BufferId(i), format!("Buffer {i}"), None);
         buffers.push(buffer);
     }
 
     // Verify each buffer
     for (i, buffer) in buffers.iter().enumerate() {
-        assert_eq!(buffer.content(), format!("Buffer {}", i));
+        assert_eq!(buffer.content(), format!("Buffer {i}"));
     }
 
     // Edit specific buffer

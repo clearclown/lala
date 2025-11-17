@@ -147,7 +147,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 if in_ordered_list {
                     list_item_number += 1;
                     ui.horizontal(|ui| {
-                        ui.label(format!("{}.", list_item_number));
+                        ui.label(format!("{list_item_number}."));
                         ui.label(text);
                     });
                 } else {

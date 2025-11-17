@@ -209,7 +209,7 @@ async fn perform_grep(options: GrepOptions, tx: Sender<GrepResult>) {
     let regex = match pattern_result {
         Ok(r) => r,
         Err(e) => {
-            eprintln!("Failed to build regex: {}", e);
+            eprintln!("Failed to build regex: {e}");
             return;
         }
     };
