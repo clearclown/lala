@@ -6,6 +6,21 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **Launchpadアカウント作成**（PPAを使う場合のみ、5分）
+   - https://launchpad.net/ にアクセス
+   - Ubuntu Oneアカウントで登録
+   - GPGキーを登録（`gpg --gen-key` で生成後、Webで登録）
+   - PPAを作成
+
+**基本的な.deb配布（GitHub Releases経由）は全てCLIで完結します！**
+**PPAは高度な機能でオプションです。**
+
+---
+
 ## 🎯 概要
 
 .debパッケージを作成すると、Debian/Ubuntu系のLinuxディストリビューションで`apt install`できるようになります。

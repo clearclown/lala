@@ -6,6 +6,29 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **Snap Storeアカウント作成**（初回のみ、3分）
+   - https://snapcraft.io/ にアクセス
+   - Ubuntu Oneアカウントで登録
+   - Developer dashboard にアクセス
+
+2. **Snap名の登録**（初回のみ、1分）
+   - `snapcraft register lala` でCLI登録できるが、
+   - ブラウザで https://snapcraft.io/register からも登録可能
+
+3. **ストアリスティングの設定**（初回のみ、5-10分）
+   - https://snapcraft.io/lala/listing にアクセス
+   - アプリの説明、アイコン、スクリーンショットを設定
+   - カテゴリとキーワードを設定
+   - または `snapcraft set-description` / `snapcraft set-icon` でCLI設定も可能
+
+**ビルド・アップロード・リリースは全てCLI（snapcraft）で完結します！**
+
+---
+
 ## 🎯 概要
 
 Snapは Canonical が開発したユニバーサルパッケージ形式で、Ubuntu公式ストアで配布できます。
@@ -207,12 +230,27 @@ snapcraft register lala
 # Snapをビルド（リリース版）
 snapcraft clean
 snapcraft
-
-# Snap Storeにアップロード
-snapcraft upload lala_0.1.0_amd64.snap
 ```
 
-### Step 3: リリースチャンネルの設定
+**方法1: アップロードとリリースを分離**
+```bash
+# Snap Storeにアップロード
+snapcraft upload lala_0.1.0_amd64.snap
+
+# 後でチャンネルにリリース（Step 3参照）
+snapcraft release lala <revision> stable
+```
+
+**方法2: アップロードと同時にリリース（推奨）**
+```bash
+# アップロードと同時にstableチャンネルにリリース
+snapcraft upload --release=stable lala_0.1.0_amd64.snap
+
+# または複数チャンネルに同時リリース
+snapcraft upload --release=stable,candidate lala_0.1.0_amd64.snap
+```
+
+### Step 3: リリースチャンネルの設定（方法1の場合）
 
 Snapには4つのチャンネルがあります：
 - **stable**: 安定版（一般ユーザー向け）

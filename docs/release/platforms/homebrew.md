@@ -6,6 +6,23 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **GitHubリポジトリ作成**（初回のみ、2分）
+   - `gh repo create homebrew-lala --public` でCLI作成できるが、
+   - ブラウザで https://github.com/new から手動作成も可能
+
+2. **公式Homebrew Coreへの申請**（オプション、人気が出たら）
+   - GitHub上でプルリクエストのレビュー対応
+   - https://github.com/Homebrew/homebrew-core でPR作成
+   - レビュアーとのやり取りはGitHub上で
+
+**基本的な公開（自分のTap）は全てCLIで完結します！**
+
+---
+
 ## 🎯 概要
 
 HomebrewはmacOSとLinux用のパッケージマネージャーです。

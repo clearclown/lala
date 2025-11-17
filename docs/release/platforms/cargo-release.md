@@ -6,6 +6,25 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **crates.ioアカウント作成**（初回のみ、1分）
+   - https://crates.io/ にアクセス
+   - 「Log in with GitHub」をクリック
+   - GitHubアカウントで認証
+
+2. **APIトークンの取得**（初回のみ、1分）
+   - ログイン後、https://crates.io/settings/tokens にアクセス
+   - 「New Token」をクリック
+   - トークン名を入力（例: "lala-publishing"）
+   - トークンをコピー
+
+**それ以外は全てCLIで完結します！**
+
+---
+
 ## 🎯 概要
 
 crates.ioはRustの公式パッケージレジストリです。
@@ -88,29 +107,37 @@ ls -la LICENSE-MIT LICENSE-APACHE
 
 ### 4. 不要なファイルの除外
 
-`.cargo-ignore`ファイルを作成（.gitignoreと同じ形式）：
+**重要**: `.cargo-ignore`ではなく、`Cargo.toml`の`exclude`キーを使用します：
 
-```bash
-cat > .cargo-ignore << 'EOF'
-# 開発用ファイル
-.github/
-docs/
-tests/
-screenshots/
-*.sh
-*.md
-!README.md
-!CHANGELOG.md
+```toml
+[package]
+exclude = [
+    ".github/",
+    "docs/",
+    "tests/",
+    "screenshots/",
+    "*.sh",
+    # README.mdとCHANGELOG.mdは含める
+    # （excludeに指定しない）
+    "target/",
+    "Cargo.lock",
+    ".vscode/",
+    ".idea/",
+]
 
-# ビルド生成物
-target/
-Cargo.lock
-
-# IDE設定
-.vscode/
-.idea/
-EOF
+# または includeで明示的に指定
+# include = [
+#     "src/**/*",
+#     "Cargo.toml",
+#     "Cargo.lock",
+#     "README.md",
+#     "CHANGELOG.md",
+#     "LICENSE-MIT",
+#     "LICENSE-APACHE",
+# ]
 ```
+
+**注意**: パッケージサイズの上限は10MBです。
 
 ---
 

@@ -6,6 +6,25 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **GitHub Actions権限の設定**（初回のみ、30秒）
+   - リポジトリページ → Settings → Actions → General
+   - "Workflow permissions" で **"Read and write permissions"** を選択
+   - Save をクリック
+
+   ⚠️ **これを設定しないと自動リリースが失敗します！**
+
+2. **リリースノートの編集**（任意、各リリース時）
+   - ブラウザで https://github.com/clearclown/lala/releases を確認
+   - 自動生成されたリリースノートを編集したい場合のみ
+
+**それ以外は全てCLI（gh + git）で完結します！**
+
+---
+
 ## 🎯 概要
 
 GitHub Releasesを使用すると、コンパイル済みのバイナリを複数のプラットフォーム向けに配布できます。

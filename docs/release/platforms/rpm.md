@@ -6,6 +6,21 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **COPRアカウント作成**（COPRを使う場合のみ、3分）
+   - https://copr.fedorainfracloud.org/ にアクセス
+   - Fedoraアカウントでログイン
+   - 新しいプロジェクトを作成
+   - ビルド設定（chroot選択）
+
+**基本的な.rpm配布（GitHub Releases経由）は全てCLIで完結します！**
+**COPRは高度な機能でオプションです。**
+
+---
+
 ## 🎯 概要
 
 .rpmパッケージを作成すると、Fedora/RHEL/CentOS/openSUSEなどで`dnf install`または`yum install`できるようになります。

@@ -6,6 +6,26 @@
 
 ---
 
+## 🖱️ GUI操作が必須の部分
+
+以下の操作は**ブラウザでの手動操作が必要**です：
+
+1. **AURアカウント作成**（初回のみ、3分）
+   - https://aur.archlinux.org/ にアクセス
+   - 右上の「Register」をクリック
+   - ユーザー名、メールアドレス、パスワードを入力
+   - メール認証
+
+2. **SSH公開鍵の登録**（初回のみ、2分）
+   - `ssh-keygen -t ed25519 -C "your.email@example.com"` でCLI生成
+   - `cat ~/.ssh/id_ed25519.pub` で公開鍵をコピー
+   - AURアカウントページ → My Account → SSH Public Key
+   - 公開鍵を貼り付けて保存
+
+**それ以外は全てCLI（git + makepkg）で完結します！**
+
+---
+
 ## 🎯 概要
 
 AUR (Arch User Repository) はArch Linuxユーザー向けのコミュニティ駆動パッケージリポジトリです。
