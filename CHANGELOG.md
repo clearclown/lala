@@ -9,37 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Modern text editor with GUI and CLI support
-- Multi-format support:
-  - Markdown with real-time preview and syntax highlighting
-  - HTML parsing and rendering
-  - LaTeX with Unicode conversion for math symbols
-  - Mermaid diagram visualization
-- Syntax highlighting for code blocks using syntect
+- Multi-format support (Markdown, HTML, LaTeX, Mermaid)
+- Syntax highlighting for code blocks
+- Real-time preview for Markdown, HTML, LaTeX, and Mermaid diagrams
 - AI integration with Gemini API (optional feature)
-  - Text improvement
-  - Grammar correction
-  - Summarization
-- IME support for Japanese/CJK input
-- Light/Dark theme support with custom color schemes
+- Full IME support for Japanese/CJK input
+- Light and Dark theme support
 - Search and replace functionality with regex support
-- Grep functionality for project-wide search
+- Project-wide grep search with .gitignore support
 - Multiple tab support
 - File tree navigation
 
 ### Features
 - Fast startup time (<100ms)
-- Lightweight (no Electron, pure Rust)
+- Lightweight (no Electron dependency)
 - Cross-platform support (Windows, Linux, macOS)
 - Efficient text editing with Rope data structure
-- .gitignore support in file search
-- Zero-cost abstractions for high performance
+- 171 comprehensive tests covering all features
 
 ### Technical
-- Built with Rust 2021 edition
-- GUI framework: egui/eframe 0.33
-- Text editing: ropey 1.6
-- Markdown parsing: pulldown-cmark 0.12
-- Syntax highlighting: syntect 5.3
-- Async runtime: tokio 1.48
+- Built with Rust 2021 Edition
+- GUI framework: egui 0.33 + eframe
+- Text processing: ropey (Rope structure)
+- Markdown parser: pulldown-cmark
+- Syntax highlighting: syntect
+- Async runtime: Tokio
+- Regular expressions: regex
+- AI integration: reqwest + Gemini API
 
 [0.1.0]: https://github.com/clearclown/lala/releases/tag/v0.1.0
