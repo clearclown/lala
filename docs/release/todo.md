@@ -13,38 +13,41 @@
 - [x] バージョン0.1.0の確認
 
 ### 📦 パッケージング準備
-- [ ] Cargo.tomlのメタデータ確認
-- [ ] LICENSEファイルの確認
-- [ ] READMEの最終確認
-- [ ] CHANGELOGの作成
+- [x] Cargo.tomlのメタデータ確認
+- [x] LICENSEファイルの確認
+- [x] READMEの最終確認
+- [x] CHANGELOGの作成
 
 ### 🏗️ ビルド設定
-- [ ] クロスプラットフォームビルドの設定
-- [ ] GitHub Actions CI/CDの設定
-- [ ] リリースアセットの自動生成
+- [x] クロスプラットフォームビルドの設定
+- [x] GitHub Actions CI/CDの設定
+- [x] リリースアセットの自動生成
 
 ### 🎯 プラットフォーム別リリース
 
 #### 1. Cargo (crates.io) - 最優先 ⭐
 **難易度**: ★☆☆☆☆ (簡単)
-**ステータス**: 準備中
+**ステータス**: ✅ 完了 (2025-11-17)
 **必要な作業**:
-- [ ] crates.ioアカウントの作成
-- [ ] `cargo publish --dry-run` でチェック
-- [ ] `cargo publish` で公開
+- [x] crates.ioアカウントの作成
+- [x] `cargo publish --dry-run` でチェック
+- [x] `cargo publish` で公開
 
+**リリースURL**: https://crates.io/crates/lala
 **詳細**: [cargo-release.md](./platforms/cargo-release.md)
 
 ---
 
 #### 2. GitHub Releases - 最優先 ⭐
 **難易度**: ★★☆☆☆ (簡単)
-**ステータス**: 準備中
+**ステータス**: ✅ 完了 (2025-11-17)
 **必要な作業**:
-- [ ] バイナリのクロスコンパイル設定
-- [ ] GitHub Actionsワークフロー作成
-- [ ] タグの作成とリリースノート
+- [x] バイナリのクロスコンパイル設定
+- [x] GitHub Actionsワークフロー作成
+- [x] タグの作成とリリースノート
 
+**リリースURL**: https://github.com/clearclown/lala/releases/tag/v0.1.0
+**プラットフォーム**: Linux (x86_64, ARM64), macOS (Intel, Apple Silicon), Windows (x86_64)
 **詳細**: [github-releases.md](./platforms/github-releases.md)
 
 ---
@@ -137,9 +140,9 @@
 
 初心者向けに、簡単なものから順番にリリースすることをお勧めします：
 
-### Phase 1: 基本リリース（1-2日）
-1. **Cargo (crates.io)** - Rustユーザー向け、最も簡単
-2. **GitHub Releases** - バイナリ配布、比較的簡単
+### Phase 1: 基本リリース ✅ 完了 (2025-11-17)
+1. ✅ **Cargo (crates.io)** - Rustユーザー向け、最も簡単
+2. ✅ **GitHub Releases** - バイナリ配布、比較的簡単
 
 ### Phase 2: パッケージマネージャー（3-5日）
 3. **Homebrew** - macOS/Linuxユーザー向け
@@ -253,11 +256,28 @@ cross build --release --target x86_64-pc-windows-gnu
 
 リリースが完了したら：
 
-- [ ] リリースノートの作成
+- [x] リリースノートの作成 (CHANGELOG.md)
 - [ ] ブログ投稿/SNS告知
 - [ ] Reddit/HackerNewsへの投稿
 - [ ] パッケージマネージャーのドキュメント更新
 - [ ] ユーザーフィードバックの収集
+
+### ✅ Phase 1 完了状況
+
+**crates.io**:
+- パッケージ: https://crates.io/crates/lala
+- バージョン: 0.1.0
+- サイズ: 411.1 KiB (97.6 KiB 圧縮)
+- インストール: `cargo install lala`
+
+**GitHub Releases**:
+- リリースページ: https://github.com/clearclown/lala/releases/tag/v0.1.0
+- バイナリ数: 5プラットフォーム
+  - lala-linux-x86_64
+  - lala-linux-aarch64
+  - lala-macos-x86_64
+  - lala-macos-aarch64
+  - lala-windows-x86_64.exe
 
 ---
 
