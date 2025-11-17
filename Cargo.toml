@@ -2,19 +2,36 @@
 name = "lala"
 version = "0.1.0"
 edition = "2021"
-authors = ["lala contributors"]
+authors = ["clearclown <clearcleaclown@gmail.com>"]
 description = "A modern, lightweight text editor with GUI and CLI support for Markdown, HTML, Mermaid, and LaTeX"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/yourusername/lala"
-homepage = "https://github.com/yourusername/lala"
-documentation = "https://github.com/yourusername/lala/blob/main/README.md"
+repository = "https://github.com/clearclown/lala"
+homepage = "https://github.com/clearclown/lala"
+documentation = "https://github.com/clearclown/lala/blob/main/README.md"
 keywords = ["editor", "markdown", "latex", "mermaid", "html"]
 categories = ["command-line-utilities", "text-editors", "visualization"]
 readme = "README.md"
 exclude = [
-    "tests/fixtures/*",
-    ".git*",
-    ".github/*",
+    # 開発用ファイル
+    ".github/",
+    ".git/",
+    ".gitignore",
+    ".gitattributes",
+    "docs/",
+    "screenshots/",
+    "tests/fixtures/",
+
+    # ビルド生成物
+    "target/",
+
+    # IDE設定
+    ".vscode/",
+    ".idea/",
+    "*.swp",
+    "*.swo",
+
+    # リリース準備ドキュメント（開発用）
+    "docs/release/",
 ]
 
 [[bin]]

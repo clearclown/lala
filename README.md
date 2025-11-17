@@ -80,17 +80,48 @@ Lalaはこれらの問題を解決します。
 
 ## 📦 インストール
 
-### 前提条件
-- Rust 1.70以上
-- Cargo（Rustツールチェーンに含まれます）
+### 方法1: Cargoからインストール（最も簡単・推奨）⭐
 
-### Cargoからインストール（推奨）
+Rustツールチェーンがインストールされている場合：
 
 ```bash
+# crates.ioから最新版をインストール
 cargo install lala
+
+# AI機能も使いたい場合
+cargo install lala --features llm
 ```
 
-### ソースからビルド
+**Rustのインストール**: https://rustup.rs/
+
+### 方法2: GitHub Releasesからバイナリをダウンロード
+
+Rustをインストールしたくない場合は、プリコンパイル済みバイナリを使用：
+
+```bash
+# Linux x86_64
+curl -L https://github.com/clearclown/lala/releases/latest/download/lala-linux-x86_64 -o lala
+chmod +x lala
+sudo mv lala /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/clearclown/lala/releases/latest/download/lala-macos-x86_64 -o lala
+chmod +x lala
+sudo mv lala /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/clearclown/lala/releases/latest/download/lala-macos-aarch64 -o lala
+chmod +x lala
+sudo mv lala /usr/local/bin/
+
+# Windows
+# https://github.com/clearclown/lala/releases/latest から
+# lala-windows-x86_64.exe をダウンロード
+```
+
+### 方法3: ソースからビルド
+
+開発者向け：
 
 ```bash
 # リポジトリをクローン
@@ -101,8 +132,19 @@ cd lala
 cargo build --release
 
 # バイナリは target/release/lala に生成されます
-# オプション: システムにインストール
+
+# システムにインストール（オプション）
 cargo install --path .
+
+# AI機能を有効にしてインストール
+cargo install --path . --features llm
+```
+
+### アンインストール
+
+```bash
+# Cargoでインストールした場合
+cargo uninstall lala
 ```
 
 ### AI機能を有効化（オプション）
