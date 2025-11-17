@@ -103,13 +103,33 @@ brew uninstall lala
 brew untap clearclown/lala
 ```
 
-### Method 2: Install from Cargo (Recommended)
+### Method 2: Debian/Ubuntu (.deb package)
+
+For Debian/Ubuntu-based Linux distributions:
+
+```bash
+# Download the .deb package
+wget https://github.com/clearclown/lala/releases/latest/download/lala_0.1.0-1_amd64.deb
+
+# Install
+sudo dpkg -i lala_0.1.0-1_amd64.deb
+
+# Fix dependencies if needed
+sudo apt --fix-broken install
+```
+
+Uninstall:
+```bash
+sudo apt remove lala
+```
+
+### Method 3: Install from Cargo (Recommended)
 
 ```bash
 cargo install lala
 ```
 
-### Method 3: Build from Source
+### Method 4: Build from Source
 
 ```bash
 # Clone repository

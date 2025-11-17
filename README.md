@@ -113,7 +113,27 @@ brew uninstall lala
 brew untap clearclown/lala
 ```
 
-### 方法3: GitHub Releasesからバイナリをダウンロード
+### 方法3: Debian/Ubuntu (.deb package)
+
+Debian/Ubuntu系のLinuxディストリビューションでは、.debパッケージを使用：
+
+```bash
+# .debパッケージをダウンロード
+wget https://github.com/clearclown/lala/releases/latest/download/lala_0.1.0-1_amd64.deb
+
+# インストール
+sudo dpkg -i lala_0.1.0-1_amd64.deb
+
+# 依存関係のエラーがある場合（あれば）
+sudo apt --fix-broken install
+```
+
+アンインストール：
+```bash
+sudo apt remove lala
+```
+
+### 方法4: GitHub Releasesからバイナリをダウンロード
 
 Rustをインストールしたくない場合は、プリコンパイル済みバイナリを使用：
 
@@ -138,7 +158,7 @@ sudo mv lala /usr/local/bin/
 # lala-windows-x86_64.exe をダウンロード
 ```
 
-### 方法4: ソースからビルド
+### 方法5: ソースからビルド
 
 開発者向け：
 

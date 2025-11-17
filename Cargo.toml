@@ -106,3 +106,29 @@ tempfile = "3.14"
 opt-level = 3
 lto = true
 codegen-units = 1
+
+[package.metadata.deb]
+# パッケージの基本情報
+maintainer = "clearclown <clearcleaclown@gmail.com>"
+copyright = "2025, clearclown <clearcleaclown@gmail.com>"
+license-file = ["LICENSE-MIT", "0"]
+extended-description = """
+Lala is a modern, lightweight text editor written in Rust.
+It supports multiple formats including Markdown, HTML, LaTeX, and Mermaid.
+Features include syntax highlighting, AI integration, and IME support."""
+
+# 依存関係（Debian/Ubuntuのパッケージ名）
+depends = "$auto"
+
+# セクション（カテゴリ）
+section = "editors"
+priority = "optional"
+
+# インストールするファイル
+assets = [
+    ["target/release/lala", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/lala/", "644"],
+    ["docs/readmeLangs/README_en.md", "usr/share/doc/lala/", "644"],
+    ["lala.desktop", "usr/share/applications/", "644"],
+    ["assets/icon.png", "usr/share/pixmaps/lala.png", "644"],
+]

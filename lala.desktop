@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Lala
+GenericName=Text Editor
+Comment=Modern multi-format text editor
+Exec=lala %F
+Icon=lala
+Terminal=false
+Type=Application
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/markdown;text/html;
+Keywords=editor;text;markdown;
