@@ -91,11 +91,7 @@ impl SyntaxHighlighter {
 
     /// Converts syntect Style to egui Color32
     fn style_to_color(style: Style) -> Color32 {
-        Color32::from_rgb(
-            style.foreground.r,
-            style.foreground.g,
-            style.foreground.b,
-        )
+        Color32::from_rgb(style.foreground.r, style.foreground.g, style.foreground.b)
     }
 
     /// Returns the list of supported extensions

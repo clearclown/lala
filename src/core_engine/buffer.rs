@@ -148,7 +148,10 @@ impl Buffer {
         let line_len = line.len_chars();
 
         if pos.col > line_len {
-            return Err(format!("Column {} out of bounds for line {}", pos.col, pos.line));
+            return Err(format!(
+                "Column {} out of bounds for line {}",
+                pos.col, pos.line
+            ));
         }
 
         Ok(line_start + pos.col)

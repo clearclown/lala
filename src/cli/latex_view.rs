@@ -8,7 +8,6 @@
 ///
 /// For high-quality rendering, users can compile with:
 /// `pdflatex document.tex` or use Overleaf
-
 use colored::*;
 use regex::Regex;
 use std::collections::HashMap;
@@ -52,7 +51,8 @@ fn render_preamble(content: &str) {
         }
     }
 
-    let packages: Vec<_> = package_re.captures_iter(content)
+    let packages: Vec<_> = package_re
+        .captures_iter(content)
         .map(|cap| cap.get(2).unwrap().as_str())
         .collect();
 
@@ -159,7 +159,11 @@ fn render_equations(content: &str) {
     // Inline math ($...$)
     let inline_count = inline_math_re.captures_iter(content).count();
     if inline_count > 0 {
-        println!("  {} {} inline math expressions", "Found".dimmed(), inline_count);
+        println!(
+            "  {} {} inline math expressions",
+            "Found".dimmed(),
+            inline_count
+        );
     }
 
     println!();
@@ -191,7 +195,11 @@ fn render_lists(content: &str) {
         let mut counter = 1;
         for item_cap in item_re.captures_iter(list_content) {
             let item_text = item_cap.get(1).unwrap().as_str();
-            println!("  {}. {}", counter.to_string().bright_yellow(), clean_latex_text(item_text));
+            println!(
+                "  {}. {}",
+                counter.to_string().bright_yellow(),
+                clean_latex_text(item_text)
+            );
             counter += 1;
         }
         println!();

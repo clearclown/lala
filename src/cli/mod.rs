@@ -10,10 +10,10 @@
 //! - ファイルパス、ディレクトリパス、または空のエディタ起動の判定
 //! - Markdownプレビュー機能
 
-pub mod markdown_view;
 pub mod html_view;
-pub mod mermaid_view;
 pub mod latex_view;
+pub mod markdown_view;
+pub mod mermaid_view;
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -156,22 +156,10 @@ where
             Commands::Markdown { file, no_color } => {
                 StartupMode::MarkdownPreview { file, no_color }
             }
-            Commands::Html { file, no_color } => {
-                StartupMode::HtmlPreview { file, no_color }
-            }
-            Commands::Mermaid { file, no_color } => {
-                StartupMode::MermaidPreview { file, no_color }
-            }
-            Commands::Latex { file, no_color } => {
-                StartupMode::LatexPreview { file, no_color }
-            }
-            Commands::View {
-                file,
-                line_numbers,
-            } => StartupMode::ViewFile {
-                file,
-                line_numbers,
-            },
+            Commands::Html { file, no_color } => StartupMode::HtmlPreview { file, no_color },
+            Commands::Mermaid { file, no_color } => StartupMode::MermaidPreview { file, no_color },
+            Commands::Latex { file, no_color } => StartupMode::LatexPreview { file, no_color },
+            Commands::View { file, line_numbers } => StartupMode::ViewFile { file, line_numbers },
         };
     }
 

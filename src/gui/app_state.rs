@@ -83,15 +83,13 @@ impl AppState {
 
     /// 現在アクティブなタブへの参照を取得する
     pub fn active_tab(&self) -> Option<&EditorTabState> {
-        self.active_tab_index
-            .and_then(|idx| self.tabs.get(idx))
+        self.active_tab_index.and_then(|idx| self.tabs.get(idx))
     }
 
     /// 現在アクティブなタブへの可変参照を取得する
     #[allow(dead_code)]
     pub fn active_tab_mut(&mut self) -> Option<&mut EditorTabState> {
-        self.active_tab_index
-            .and_then(|idx| self.tabs.get_mut(idx))
+        self.active_tab_index.and_then(|idx| self.tabs.get_mut(idx))
     }
 
     /// アクティブなタブを設定する

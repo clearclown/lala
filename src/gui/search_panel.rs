@@ -1,7 +1,7 @@
 use eframe::egui;
 
 use crate::core_engine::Buffer;
-use crate::search::{SearchOptions, SearchResult, search_in_buffer, replace_in_buffer};
+use crate::search::{replace_in_buffer, search_in_buffer, SearchOptions, SearchResult};
 
 pub struct SearchPanel {
     // Search state
@@ -77,7 +77,10 @@ impl SearchPanel {
 
         // Options
         ui.horizontal(|ui| {
-            if ui.checkbox(&mut self.case_sensitive, "Case sensitive").changed() {
+            if ui
+                .checkbox(&mut self.case_sensitive, "Case sensitive")
+                .changed()
+            {
                 self.perform_search(buffer);
             }
 

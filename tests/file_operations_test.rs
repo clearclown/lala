@@ -6,7 +6,6 @@
 /// - File tree operations
 /// - UTF-8 encoding
 /// - Japanese filename support
-
 use lala::core_engine::{Buffer, BufferId};
 use lala::file_tree::FileTree;
 use std::fs;
@@ -156,16 +155,16 @@ fn test_buffer_modified_flag_after_save() {
     let temp_dir = TempDir::new().unwrap();
     let file_path = temp_dir.path().join("modified.txt");
 
-    let mut buffer = Buffer::from_string(
-        BufferId(0),
-        "Original".to_string(),
-        Some(file_path.clone()),
-    );
+    let mut buffer =
+        Buffer::from_string(BufferId(0), "Original".to_string(), Some(file_path.clone()));
 
     // Make changes
     use lala::core_engine::{Position, Range};
     buffer
-        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 8)), "Modified")
+        .replace_range(
+            Range::new(Position::new(0, 0), Position::new(0, 8)),
+            "Modified",
+        )
         .unwrap();
 
     assert!(buffer.is_dirty());

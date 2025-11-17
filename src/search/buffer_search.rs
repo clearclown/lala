@@ -43,9 +43,11 @@ pub fn search_in_buffer(
         let regex = build_regex(pattern, options)?;
 
         for mat in regex.find_iter(&content) {
-            let start_pos = buffer.char_idx_to_position(mat.start())
+            let start_pos = buffer
+                .char_idx_to_position(mat.start())
                 .map_err(|e| format!("Failed to convert start position: {}", e))?;
-            let end_pos = buffer.char_idx_to_position(mat.end())
+            let end_pos = buffer
+                .char_idx_to_position(mat.end())
                 .map_err(|e| format!("Failed to convert end position: {}", e))?;
 
             results.push(SearchResult {
@@ -72,9 +74,11 @@ pub fn search_in_buffer(
             let match_start = start + pos;
             let match_end = match_start + pattern.len();
 
-            let start_pos = buffer.char_idx_to_position(match_start)
+            let start_pos = buffer
+                .char_idx_to_position(match_start)
                 .map_err(|e| format!("Failed to convert start position: {}", e))?;
-            let end_pos = buffer.char_idx_to_position(match_end)
+            let end_pos = buffer
+                .char_idx_to_position(match_end)
                 .map_err(|e| format!("Failed to convert end position: {}", e))?;
 
             results.push(SearchResult {
@@ -176,11 +180,7 @@ mod tests {
 
     #[test]
     fn test_search_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "t1t t2t t3t test".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "t1t t2t t3t test".to_string(), None);
 
         let options = SearchOptions {
             case_sensitive: true,
@@ -211,11 +211,8 @@ mod tests {
 
     #[test]
     fn test_replace_single() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello World Hello Rust".to_string(),
-            None,
-        );
+        let mut buffer =
+            Buffer::from_string(BufferId(0), "Hello World Hello Rust".to_string(), None);
 
         let options = SearchOptions::default();
         let count = replace_in_buffer(&mut buffer, "Hello", "Hi", &options, false).unwrap();
@@ -226,11 +223,8 @@ mod tests {
 
     #[test]
     fn test_replace_all() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello World Hello Rust".to_string(),
-            None,
-        );
+        let mut buffer =
+            Buffer::from_string(BufferId(0), "Hello World Hello Rust".to_string(), None);
 
         let options = SearchOptions::default();
         let count = replace_in_buffer(&mut buffer, "Hello", "Hi", &options, true).unwrap();
@@ -241,11 +235,7 @@ mod tests {
 
     #[test]
     fn test_replace_regex() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "t1t t2t t3t".to_string(),
-            None,
-        );
+        let mut buffer = Buffer::from_string(BufferId(0), "t1t t2t t3t".to_string(), None);
 
         let options = SearchOptions {
             case_sensitive: true,

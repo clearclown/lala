@@ -2,7 +2,6 @@
 ///
 /// These tests verify that Markdown, HTML, LaTeX, and Mermaid
 /// preview features work correctly
-
 use std::path::Path;
 
 /// Test file type detection based on extensions
@@ -11,8 +10,14 @@ fn test_markdown_extension_detection() {
     let md_files = vec!["test.md", "README.md", "doc.markdown"];
     for file in md_files {
         let path = Path::new(file);
-        assert_eq!(path.extension().and_then(|s| s.to_str()),
-                   Some(if file.ends_with(".markdown") { "markdown" } else { "md" }));
+        assert_eq!(
+            path.extension().and_then(|s| s.to_str()),
+            Some(if file.ends_with(".markdown") {
+                "markdown"
+            } else {
+                "md"
+            })
+        );
     }
 }
 
@@ -49,39 +54,51 @@ fn test_mermaid_extension_detection() {
 /// Test Markdown parsing
 #[test]
 fn test_markdown_basic_parsing() {
-    use pulldown_cmark::{Parser, Event, Tag, HeadingLevel};
+    use pulldown_cmark::{Event, HeadingLevel, Parser, Tag};
 
     let markdown = "# Hello World\n\nThis is a test.";
     let parser = Parser::new(markdown);
     let events: Vec<Event> = parser.collect();
 
     // Should contain heading and paragraph
-    assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Heading { level: HeadingLevel::H1, .. }))));
-    assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Paragraph))));
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::Start(Tag::Heading {
+            level: HeadingLevel::H1,
+            ..
+        })
+    )));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, Event::Start(Tag::Paragraph))));
 }
 
 #[test]
 fn test_markdown_code_blocks() {
-    use pulldown_cmark::{Parser, Event, Tag, CodeBlockKind};
+    use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
 
     let markdown = "```rust\nfn main() {}\n```";
     let parser = Parser::new(markdown);
     let events: Vec<Event> = parser.collect();
 
     // Should contain code block
-    assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))))));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))))));
 }
 
 #[test]
 fn test_markdown_lists() {
-    use pulldown_cmark::{Parser, Event, Tag};
+    use pulldown_cmark::{Event, Parser, Tag};
 
     let markdown = "- Item 1\n- Item 2\n- Item 3";
     let parser = Parser::new(markdown);
     let events: Vec<Event> = parser.collect();
 
     // Should contain list
-    assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::List(_)))));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, Event::Start(Tag::List(_)))));
 }
 
 /// Test HTML parsing
@@ -261,7 +278,7 @@ fn test_malformed_html() {
 
 #[test]
 fn test_unicode_in_markdown() {
-    use pulldown_cmark::{Parser, Event};
+    use pulldown_cmark::{Event, Parser};
 
     let markdown = "# 日本語のテスト\n\nこれはテストです。";
     let parser = Parser::new(markdown);
@@ -284,9 +301,7 @@ fn test_unicode_in_markdown() {
 #[test]
 fn test_special_chars_in_latex() {
     let input = r"\frac{1}{2} + \sqrt{3}";
-    let output = input
-        .replace(r"\frac", "")
-        .replace(r"\sqrt", "√");
+    let output = input.replace(r"\frac", "").replace(r"\sqrt", "√");
 
     assert!(output.contains("√"));
 }
@@ -294,7 +309,7 @@ fn test_special_chars_in_latex() {
 /// Test complex scenarios
 #[test]
 fn test_markdown_with_inline_code() {
-    use pulldown_cmark::{Parser, Event};
+    use pulldown_cmark::{Event, Parser};
 
     let markdown = "This is `inline code` in text.";
     let parser = Parser::new(markdown);
@@ -306,14 +321,16 @@ fn test_markdown_with_inline_code() {
 
 #[test]
 fn test_markdown_with_links() {
-    use pulldown_cmark::{Parser, Event, Tag};
+    use pulldown_cmark::{Event, Parser, Tag};
 
     let markdown = "[Link text](https://example.com)";
     let parser = Parser::new(markdown);
     let events: Vec<Event> = parser.collect();
 
     // Should contain link
-    assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Link { .. }))));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, Event::Start(Tag::Link { .. }))));
 }
 
 #[test]

@@ -5,7 +5,6 @@
 /// - API key validation
 /// - Error handling
 /// - Feature flag handling
-
 use lala::llm::GeminiClient;
 
 // === Client Creation Tests ===
@@ -170,7 +169,8 @@ fn test_special_characters_in_markdown() {
     std::env::set_var("GEMINI_API_KEY", "test_key");
 
     if let Ok(client) = GeminiClient::from_env() {
-        let text_with_special_chars = "# Test\n\n**Bold** *italic* `code` [link](url)\n\n> Quote\n\n- List item";
+        let text_with_special_chars =
+            "# Test\n\n**Bold** *italic* `code` [link](url)\n\n> Quote\n\n- List item";
         let result = client.improve_markdown(text_with_special_chars);
         assert!(result.is_ok() || result.is_err());
     }

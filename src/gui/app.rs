@@ -4,12 +4,12 @@ use std::path::PathBuf;
 
 use crate::core_engine::{Buffer, BufferId};
 use crate::file_tree::FileTree;
-use crate::search::GrepEngine;
 use crate::llm::GeminiClient;
+use crate::search::GrepEngine;
 
-use super::search_panel::SearchPanel;
 use super::grep_panel::GrepPanel;
 use super::markdown_preview;
+use super::search_panel::SearchPanel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PreviewMode {
@@ -53,6 +53,11 @@ pub struct LalaApp {
     // LLM integration (optional)
     llm_client: Option<GeminiClient>,
     llm_status: String,
+
+    // Settings
+    show_settings: bool,
+    api_key_input: String,
+    ai_enabled: bool,
 }
 
 impl LalaApp {
@@ -66,9 +71,17 @@ impl LalaApp {
         buffers.insert(buffer_id, buffer);
 
         // Try to initialize LLM client from environment
-        let (llm_client, llm_status) = match GeminiClient::from_env() {
-            Ok(client) => (Some(client), "LLM ready (Gemini 1.5 Flash)".to_string()),
-            Err(_) => (None, "LLM not available (set GEMINI_API_KEY)".to_string()),
+        let (llm_client, llm_status, ai_enabled) = match GeminiClient::from_env() {
+            Ok(client) => (
+                Some(client),
+                "LLM ready (Gemini 1.5 Flash)".to_string(),
+                true,
+            ),
+            Err(_) => (
+                None,
+                "LLM not available (set GEMINI_API_KEY)".to_string(),
+                false,
+            ),
         };
 
         Self {
@@ -91,6 +104,9 @@ impl LalaApp {
             is_light_theme: false, // Default to dark theme
             llm_client,
             llm_status,
+            show_settings: false,
+            api_key_input: String::new(),
+            ai_enabled,
         }
     }
 
@@ -181,9 +197,7 @@ impl LalaApp {
         }
 
         // Ctrl+Shift+F: Open grep panel
-        if ctx.input(|i| {
-            i.modifiers.command && i.modifiers.shift && i.key_pressed(egui::Key::F)
-        }) {
+        if ctx.input(|i| i.modifiers.command && i.modifiers.shift && i.key_pressed(egui::Key::F)) {
             self.show_grep_panel = true;
         }
 
@@ -213,7 +227,9 @@ impl LalaApp {
 
     fn save_file(&mut self) {
         if let Some(buffer_id) = self.active_buffer_id {
-            let file_path = self.buffers.get(&buffer_id)
+            let file_path = self
+                .buffers
+                .get(&buffer_id)
                 .and_then(|b| b.file_path())
                 .cloned();
 
@@ -224,7 +240,11 @@ impl LalaApp {
                 } else {
                     // Update buffer and mark as clean
                     if let Some(buffer) = self.buffers.get_mut(&buffer_id) {
-                        *buffer = Buffer::from_string(buffer_id, self.current_text.clone(), Some(file_path));
+                        *buffer = Buffer::from_string(
+                            buffer_id,
+                            self.current_text.clone(),
+                            Some(file_path),
+                        );
                         self.text_changed = false;
                     }
                 }
@@ -315,12 +335,23 @@ impl LalaApp {
                 });
 
                 ui.menu_button("Tools", |ui| {
+                    // Settings button
+                    if ui.button("⚙️ Settings").clicked() {
+                        self.show_settings = true;
+                        ui.close();
+                    }
+
+                    ui.separator();
                     ui.label(&self.llm_status);
                     ui.separator();
 
-                    let can_use_llm = self.llm_client.is_some();
+                    let can_use_llm = self.llm_client.is_some() && self.ai_enabled;
 
-                    if ui.add_enabled(can_use_llm, egui::Button::new("🤖 Improve Markdown")).clicked() {
+                    // AI text editing features
+                    if ui
+                        .add_enabled(can_use_llm, egui::Button::new("🤖 Improve Markdown"))
+                        .clicked()
+                    {
                         if let Some(client) = &self.llm_client {
                             match client.improve_markdown(&self.current_text) {
                                 Ok(improved) => {
@@ -335,8 +366,50 @@ impl LalaApp {
                         ui.close();
                     }
 
+                    if ui
+                        .add_enabled(can_use_llm, egui::Button::new("✨ Fix Grammar"))
+                        .clicked()
+                    {
+                        if let Some(client) = &self.llm_client {
+                            match client.improve_markdown(&format!(
+                                "Fix grammar and spelling errors in this text:\n\n{}",
+                                &self.current_text
+                            )) {
+                                Ok(improved) => {
+                                    self.current_text = improved;
+                                    self.text_changed = true;
+                                }
+                                Err(e) => {
+                                    eprintln!("LLM Error: {}", e);
+                                }
+                            }
+                        }
+                        ui.close();
+                    }
+
+                    if ui
+                        .add_enabled(can_use_llm, egui::Button::new("📝 Summarize"))
+                        .clicked()
+                    {
+                        if let Some(client) = &self.llm_client {
+                            match client.improve_markdown(&format!(
+                                "Summarize this text concisely:\n\n{}",
+                                &self.current_text
+                            )) {
+                                Ok(summary) => {
+                                    self.current_text = summary;
+                                    self.text_changed = true;
+                                }
+                                Err(e) => {
+                                    eprintln!("LLM Error: {}", e);
+                                }
+                            }
+                        }
+                        ui.close();
+                    }
+
                     if !can_use_llm {
-                        ui.label("💡 Tip: Set GEMINI_API_KEY to enable");
+                        ui.label("💡 Tip: Enable AI in Settings");
                     }
                 });
 
@@ -377,25 +450,37 @@ impl LalaApp {
                     ui.separator();
                     ui.label("Preview Mode:");
 
-                    if ui.selectable_label(self.preview_mode == PreviewMode::Markdown, "Markdown").clicked() {
+                    if ui
+                        .selectable_label(self.preview_mode == PreviewMode::Markdown, "Markdown")
+                        .clicked()
+                    {
                         self.preview_mode = PreviewMode::Markdown;
                         self.show_preview = true;
                         ui.close();
                     }
 
-                    if ui.selectable_label(self.preview_mode == PreviewMode::Html, "HTML").clicked() {
+                    if ui
+                        .selectable_label(self.preview_mode == PreviewMode::Html, "HTML")
+                        .clicked()
+                    {
                         self.preview_mode = PreviewMode::Html;
                         self.show_preview = true;
                         ui.close();
                     }
 
-                    if ui.selectable_label(self.preview_mode == PreviewMode::Latex, "LaTeX").clicked() {
+                    if ui
+                        .selectable_label(self.preview_mode == PreviewMode::Latex, "LaTeX")
+                        .clicked()
+                    {
                         self.preview_mode = PreviewMode::Latex;
                         self.show_preview = true;
                         ui.close();
                     }
 
-                    if ui.selectable_label(self.preview_mode == PreviewMode::Mermaid, "Mermaid").clicked() {
+                    if ui
+                        .selectable_label(self.preview_mode == PreviewMode::Mermaid, "Mermaid")
+                        .clicked()
+                    {
                         self.preview_mode = PreviewMode::Mermaid;
                         self.show_preview = true;
                         ui.close();
@@ -405,7 +490,8 @@ impl LalaApp {
                 // Show file status
                 if let Some(buffer_id) = self.active_buffer_id {
                     if let Some(buffer) = self.buffers.get(&buffer_id) {
-                        let file_name = buffer.file_path()
+                        let file_name = buffer
+                            .file_path()
                             .and_then(|p| p.file_name())
                             .and_then(|n| n.to_str())
                             .unwrap_or("Untitled");
@@ -443,22 +529,20 @@ impl LalaApp {
 
                     egui::ScrollArea::vertical()
                         .auto_shrink([false; 2])
-                        .show(ui, |ui| {
-                            match self.preview_mode {
-                                PreviewMode::Markdown => {
-                                    markdown_preview::render_markdown_preview(ui, &self.current_text);
-                                }
-                                PreviewMode::Html => {
-                                    self.render_html_preview(ui);
-                                }
-                                PreviewMode::Latex => {
-                                    self.render_latex_preview(ui);
-                                }
-                                PreviewMode::Mermaid => {
-                                    self.render_mermaid_preview(ui);
-                                }
-                                PreviewMode::None => {}
+                        .show(ui, |ui| match self.preview_mode {
+                            PreviewMode::Markdown => {
+                                markdown_preview::render_markdown_preview(ui, &self.current_text);
                             }
+                            PreviewMode::Html => {
+                                self.render_html_preview(ui);
+                            }
+                            PreviewMode::Latex => {
+                                self.render_latex_preview(ui);
+                            }
+                            PreviewMode::Mermaid => {
+                                self.render_mermaid_preview(ui);
+                            }
+                            PreviewMode::None => {}
                         });
                 });
         }
@@ -474,12 +558,21 @@ impl LalaApp {
                     .show(ui, |ui| {
                         // TextEdit in egui 0.33+ automatically supports IME on all platforms
                         // No manual IME configuration is needed
+
+                        // Set background color based on theme
+                        let bg_color = if self.is_light_theme {
+                            egui::Color32::from_rgb(255, 255, 255) // White for light theme
+                        } else {
+                            egui::Color32::from_rgb(30, 30, 30) // Dark gray for dark theme
+                        };
+
                         let response = ui.add(
                             egui::TextEdit::multiline(&mut self.current_text)
                                 .font(egui::TextStyle::Monospace)
                                 .desired_width(f32::INFINITY)
                                 .min_size(egui::vec2(f32::INFINITY, available_height))
                                 .frame(false) // No frame around text edit
+                                .background_color(bg_color)
                         );
 
                         // Request focus on first frame to ensure IME works immediately
@@ -535,13 +628,32 @@ impl LalaApp {
 
         // Common LaTeX symbols to Unicode
         let substitutions = vec![
-            (r"\alpha", "α"), (r"\beta", "β"), (r"\gamma", "γ"), (r"\delta", "δ"),
-            (r"\epsilon", "ε"), (r"\theta", "θ"), (r"\lambda", "λ"), (r"\mu", "μ"),
-            (r"\pi", "π"), (r"\sigma", "σ"), (r"\phi", "φ"), (r"\omega", "ω"),
-            (r"\sqrt", "√"), (r"\int", "∫"), (r"\sum", "∑"), (r"\prod", "∏"),
-            (r"\partial", "∂"), (r"\nabla", "∇"), (r"\infty", "∞"),
-            (r"\pm", "±"), (r"\times", "×"), (r"\div", "÷"),
-            (r"\leq", "≤"), (r"\geq", "≥"), (r"\neq", "≠"), (r"\approx", "≈"),
+            (r"\alpha", "α"),
+            (r"\beta", "β"),
+            (r"\gamma", "γ"),
+            (r"\delta", "δ"),
+            (r"\epsilon", "ε"),
+            (r"\theta", "θ"),
+            (r"\lambda", "λ"),
+            (r"\mu", "μ"),
+            (r"\pi", "π"),
+            (r"\sigma", "σ"),
+            (r"\phi", "φ"),
+            (r"\omega", "ω"),
+            (r"\sqrt", "√"),
+            (r"\int", "∫"),
+            (r"\sum", "∑"),
+            (r"\prod", "∏"),
+            (r"\partial", "∂"),
+            (r"\nabla", "∇"),
+            (r"\infty", "∞"),
+            (r"\pm", "±"),
+            (r"\times", "×"),
+            (r"\div", "÷"),
+            (r"\leq", "≤"),
+            (r"\geq", "≥"),
+            (r"\neq", "≠"),
+            (r"\approx", "≈"),
         ];
 
         for (latex, unicode) in substitutions {
@@ -563,7 +675,10 @@ impl LalaApp {
 
         for line in lines {
             let trimmed = line.trim();
-            if trimmed.is_empty() || trimmed.starts_with("graph") || trimmed.starts_with("flowchart") {
+            if trimmed.is_empty()
+                || trimmed.starts_with("graph")
+                || trimmed.starts_with("flowchart")
+            {
                 continue;
             }
 
@@ -652,7 +767,10 @@ impl LalaApp {
 
                         for (name, path_opt) in paths {
                             if let Some(path) = path_opt {
-                                if ui.button(format!("📂 {}: {}", name, path.display())).clicked() {
+                                if ui
+                                    .button(format!("📂 {}: {}", name, path.display()))
+                                    .clicked()
+                                {
                                     self.file_path_input = path.display().to_string();
                                 }
                             }
@@ -683,6 +801,84 @@ impl LalaApp {
             self.show_file_dialog = false;
             self.file_path_input.clear();
         }
+    }
+
+    fn show_settings(&mut self, ctx: &egui::Context) {
+        let mut is_open = self.show_settings;
+        egui::Window::new("Settings")
+            .open(&mut is_open)
+            .default_width(500.0)
+            .show(ctx, |ui| {
+                ui.heading("AI Settings");
+                ui.separator();
+
+                // AI Enable/Disable toggle
+                ui.horizontal(|ui| {
+                    ui.label("Enable AI Features:");
+                    if ui.checkbox(&mut self.ai_enabled, "").changed() {
+                        if !self.ai_enabled {
+                            self.llm_status = "AI features disabled".to_string();
+                        } else if self.llm_client.is_some() {
+                            self.llm_status = "LLM ready (Gemini 1.5 Flash)".to_string();
+                        } else {
+                            self.llm_status = "Enter API key to enable".to_string();
+                        }
+                    }
+                });
+
+                ui.add_space(10.0);
+
+                // API Key input
+                ui.label("Gemini API Key:");
+                ui.horizontal(|ui| {
+                    let response = ui.add(
+                        egui::TextEdit::singleline(&mut self.api_key_input)
+                            .hint_text("Enter your Gemini API key")
+                            .password(true)
+                            .desired_width(300.0),
+                    );
+
+                    if ui.button("Apply").clicked() || response.lost_focus() && !self.api_key_input.is_empty() {
+                        // Try to create client with new API key
+                        match GeminiClient::new(self.api_key_input.clone()) {
+                            Ok(client) => {
+                                self.llm_client = Some(client);
+                                self.llm_status = "LLM ready (Gemini 1.5 Flash)".to_string();
+                                self.ai_enabled = true;
+                            }
+                            Err(e) => {
+                                self.llm_status = format!("Error: {}", e);
+                                self.llm_client = None;
+                            }
+                        }
+                    }
+                });
+
+                ui.add_space(10.0);
+
+                // Status
+                ui.label("Status:");
+                ui.monospace(&self.llm_status);
+
+                ui.add_space(10.0);
+
+                // Help text
+                ui.label("How to get API key:");
+                ui.hyperlink_to(
+                    "Get Gemini API Key →",
+                    "https://ai.google.dev/tutorials/setup",
+                );
+
+                ui.add_space(10.0);
+                ui.separator();
+
+                ui.heading("Available AI Features");
+                ui.label("• Improve Markdown - Enhance formatting and structure");
+                ui.label("• Fix Grammar - Correct spelling and grammar errors");
+                ui.label("• Summarize - Create concise summaries");
+            });
+
+        self.show_settings = is_open;
     }
 
     fn show_save_as_dialog(&mut self, ctx: &egui::Context) {
@@ -835,6 +1031,11 @@ impl eframe::App for LalaApp {
         // Show save as dialog
         if self.show_save_as_dialog {
             self.show_save_as_dialog(ctx);
+        }
+
+        // Show settings
+        if self.show_settings {
+            self.show_settings(ctx);
         }
     }
 }

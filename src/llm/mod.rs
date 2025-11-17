@@ -70,10 +70,11 @@ pub struct GeminiClient {
 }
 
 impl GeminiClient {
-    /// Create a new Gemini client from environment variable
-    pub fn from_env() -> Result<Self, String> {
-        let api_key = std::env::var("GEMINI_API_KEY")
-            .map_err(|_| "GEMINI_API_KEY environment variable not set".to_string())?;
+    /// Create a new Gemini client with the provided API key
+    pub fn new(api_key: String) -> Result<Self, String> {
+        if api_key.trim().is_empty() {
+            return Err("API key cannot be empty".to_string());
+        }
 
         #[cfg(feature = "llm")]
         {
@@ -89,6 +90,14 @@ impl GeminiClient {
         }
     }
 
+    /// Create a new Gemini client from environment variable
+    pub fn from_env() -> Result<Self, String> {
+        let api_key = std::env::var("GEMINI_API_KEY")
+            .map_err(|_| "GEMINI_API_KEY environment variable not set".to_string())?;
+
+        Self::new(api_key)
+    }
+
     /// Improve Markdown text with Gemini
     pub fn improve_markdown(&self, text: &str) -> Result<String, String> {
         #[cfg(feature = "llm")]
@@ -102,7 +111,7 @@ impl GeminiClient {
 
         #[cfg(not(feature = "llm"))]
         {
-            let _ = text;  // Suppress unused warning
+            let _ = text; // Suppress unused warning
             Err("LLM feature is not enabled. Build with --features llm".to_string())
         }
     }
@@ -127,7 +136,7 @@ impl GeminiClient {
 
         #[cfg(not(feature = "llm"))]
         {
-            let _ = (command, error);  // Suppress unused warnings
+            let _ = (command, error); // Suppress unused warnings
             Err("LLM feature is not enabled. Build with --features llm".to_string())
         }
     }

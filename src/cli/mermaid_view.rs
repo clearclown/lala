@@ -7,7 +7,6 @@
 ///
 /// For high-quality rendering, users can install mermaid-cli:
 /// `npm install -g @mermaid-js/mermaid-cli`
-
 use colored::*;
 use regex::Regex;
 
@@ -43,9 +42,7 @@ pub fn render_mermaid_to_terminal(mermaid_content: &str) {
 
 /// Detect Mermaid diagram type
 fn detect_diagram_type(content: &str) -> String {
-    let first_line = content.lines()
-        .find(|l| !l.trim().is_empty())
-        .unwrap_or("");
+    let first_line = content.lines().find(|l| !l.trim().is_empty()).unwrap_or("");
 
     if first_line.contains("graph") || first_line.contains("flowchart") {
         "graph".to_string()
@@ -100,8 +97,16 @@ fn render_flowchart(content: &str) {
         let top_bottom = format!("┌{}┐", "─".repeat(box_width - 2));
 
         println!("  {}", top_bottom.bright_blue());
-        println!("  {} {} {}", "│".bright_blue(), label.bold(), "│".bright_blue());
-        println!("  {}", format!("└{}┘", "─".repeat(box_width - 2)).bright_blue());
+        println!(
+            "  {} {} {}",
+            "│".bright_blue(),
+            label.bold(),
+            "│".bright_blue()
+        );
+        println!(
+            "  {}",
+            format!("└{}┘", "─".repeat(box_width - 2)).bright_blue()
+        );
 
         // Show edges from this node
         for (from, to) in &edges {
@@ -157,7 +162,8 @@ fn render_sequence_diagram(content: &str) {
             let to = cap.get(2).unwrap().as_str();
             let message = cap.get(3).unwrap().as_str();
 
-            println!("  {} {} {}: {}",
+            println!(
+                "  {} {} {}: {}",
                 from.bright_green(),
                 "─→".bright_yellow(),
                 to.bright_green(),
@@ -215,7 +221,8 @@ fn render_state_diagram(content: &str) {
             let from_state = cap.get(1).unwrap().as_str();
             let to_state = cap.get(2).unwrap().as_str();
 
-            println!("  [ {} ] {} [ {} ]",
+            println!(
+                "  [ {} ] {} [ {} ]",
                 from_state.bold().cyan(),
                 "─→".bright_yellow(),
                 to_state.bold().cyan()
@@ -249,7 +256,8 @@ fn render_er_diagram(content: &str) {
         if let Some(cap) = relationship_re.captures(line) {
             let entity1 = cap.get(1).unwrap().as_str();
             let entity2 = cap.get(2).unwrap().as_str();
-            println!("  {} {} {}",
+            println!(
+                "  {} {} {}",
                 entity1.bright_green(),
                 "←→".bright_yellow(),
                 entity2.bright_green()
@@ -277,7 +285,8 @@ fn render_gantt(content: &str) {
         } else if let Some(cap) = task_re.captures(line) {
             let task_name = cap.get(1).unwrap().as_str();
             let task_details = cap.get(2).unwrap().as_str();
-            println!("    {} {}: {}",
+            println!(
+                "    {} {}: {}",
                 "▪".bright_green(),
                 task_name.bold(),
                 task_details.dimmed()
@@ -317,7 +326,8 @@ fn render_pie_chart(content: &str) {
         let bar_width = (percentage / 2.0) as usize;
         let bar = "█".repeat(bar_width);
 
-        println!("  {} {}: {} ({:.1}%)",
+        println!(
+            "  {} {}: {} ({:.1}%)",
             "▪".bright_blue(),
             label.bold(),
             bar.bright_green(),
@@ -339,12 +349,17 @@ fn render_source_view(content: &str) {
             continue;
         }
 
-        if line.contains("graph") || line.contains("flowchart") ||
-           line.contains("Diagram") || line.contains("gantt") || line.contains("pie") {
+        if line.contains("graph")
+            || line.contains("flowchart")
+            || line.contains("Diagram")
+            || line.contains("gantt")
+            || line.contains("pie")
+        {
             println!("  {}", line.bold().bright_magenta());
         } else if line.contains("-->") || line.contains("->>") {
             println!("  {}", line.bright_yellow());
-        } else if line.contains("participant") || line.contains("section") || line.contains("class") {
+        } else if line.contains("participant") || line.contains("section") || line.contains("class")
+        {
             println!("  {}", line.bright_cyan());
         } else {
             println!("  {}", line.dimmed());

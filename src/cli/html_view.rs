@@ -6,7 +6,6 @@
 /// - Formatted lists and tables
 /// - Code blocks with highlighting
 /// - Clean text extraction
-
 use colored::*;
 use scraper::{Html, Node, Selector};
 use std::fmt::Write as FmtWrite;
@@ -30,7 +29,9 @@ fn render_html_custom(document: &Html) -> Result<String, Box<dyn std::error::Err
 
     // Get body content, or root if no body
     let body_selector = Selector::parse("body").unwrap();
-    let root = document.select(&body_selector).next()
+    let root = document
+        .select(&body_selector)
+        .next()
         .map(|e| e.html())
         .unwrap_or_else(|| document.html());
 
@@ -92,7 +93,10 @@ fn render_headings(document: &Html, output: &mut String) -> Result<(), Box<dyn s
 }
 
 /// Render paragraphs
-fn render_paragraphs(document: &Html, output: &mut String) -> Result<(), Box<dyn std::error::Error>> {
+fn render_paragraphs(
+    document: &Html,
+    output: &mut String,
+) -> Result<(), Box<dyn std::error::Error>> {
     let Ok(selector) = Selector::parse("p") else {
         return Ok(());
     };
@@ -129,11 +133,15 @@ fn extract_styled_text(element: &scraper::ElementRef) -> String {
                         result.push_str(&format!("{}", inner_text.italic()));
                     }
                     "code" => {
-                        result.push_str(&format!("{}", inner_text.bright_magenta().on_truecolor(50, 50, 50)));
+                        result.push_str(&format!(
+                            "{}",
+                            inner_text.bright_magenta().on_truecolor(50, 50, 50)
+                        ));
                     }
                     "a" => {
                         if let Some(href) = elem_ref.value().attr("href") {
-                            result.push_str(&format!("{} {}",
+                            result.push_str(&format!(
+                                "{} {}",
                                 inner_text.bright_blue().underline(),
                                 format!("({})", href).dimmed()
                             ));
@@ -185,7 +193,12 @@ fn render_lists(document: &Html, output: &mut String) -> Result<(), Box<dyn std:
         for li in ol.select(&li_selector) {
             let text = li.text().collect::<String>().trim().to_string();
             if !text.is_empty() {
-                writeln!(output, "  {}. {}", counter.to_string().bright_yellow(), text)?;
+                writeln!(
+                    output,
+                    "  {}. {}",
+                    counter.to_string().bright_yellow(),
+                    text
+                )?;
                 counter += 1;
             }
         }
@@ -196,7 +209,10 @@ fn render_lists(document: &Html, output: &mut String) -> Result<(), Box<dyn std:
 }
 
 /// Render code blocks (pre, code)
-fn render_code_blocks(document: &Html, output: &mut String) -> Result<(), Box<dyn std::error::Error>> {
+fn render_code_blocks(
+    document: &Html,
+    output: &mut String,
+) -> Result<(), Box<dyn std::error::Error>> {
     let Ok(selector) = Selector::parse("pre") else {
         return Ok(());
     };

@@ -98,11 +98,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 };
 
                 ui.add_space(10.0);
-                ui.label(
-                    egui::RichText::new(text)
-                        .size(font_size)
-                        .strong()
-                );
+                ui.label(egui::RichText::new(text).size(font_size).strong());
                 ui.add_space(5.0);
 
                 // Skip to end of heading
@@ -183,7 +179,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                         ui.label(
                             egui::RichText::new(code)
                                 .monospace()
-                                .color(egui::Color32::from_rgb(200, 200, 200))
+                                .color(egui::Color32::from_rgb(200, 200, 200)),
                         );
                     });
                 ui.add_space(5.0);
@@ -202,7 +198,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 ui.label(
                     egui::RichText::new(code.as_ref())
                         .monospace()
-                        .background_color(ui.style().visuals.code_bg_color)
+                        .background_color(ui.style().visuals.code_bg_color),
                 );
             }
 
@@ -306,7 +302,9 @@ mod tests {
         let events: Vec<Event> = parser.collect();
 
         // Should contain Strong tag
-        let has_strong = events.iter().any(|e| matches!(e, Event::Start(Tag::Strong)));
+        let has_strong = events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Strong)));
         assert!(has_strong);
     }
 
@@ -317,7 +315,9 @@ mod tests {
         let events: Vec<Event> = parser.collect();
 
         // Should contain List tag
-        let has_list = events.iter().any(|e| matches!(e, Event::Start(Tag::List(_))));
+        let has_list = events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::List(_))));
         assert!(has_list);
     }
 
@@ -328,7 +328,9 @@ mod tests {
         let events: Vec<Event> = parser.collect();
 
         // Should contain CodeBlock tag
-        let has_code_block = events.iter().any(|e| matches!(e, Event::Start(Tag::CodeBlock(_))));
+        let has_code_block = events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::CodeBlock(_))));
         assert!(has_code_block);
     }
 
@@ -351,9 +353,9 @@ mod tests {
         let events: Vec<Event> = parser.collect();
 
         // Should contain ordered list
-        let has_ordered = events.iter().any(|e| {
-            matches!(e, Event::Start(Tag::List(Some(_))))
-        });
+        let has_ordered = events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::List(Some(_)))));
         assert!(has_ordered);
     }
 
@@ -364,7 +366,9 @@ mod tests {
         let events: Vec<Event> = parser.collect();
 
         // Should contain Emphasis tag
-        let has_emphasis = events.iter().any(|e| matches!(e, Event::Start(Tag::Emphasis)));
+        let has_emphasis = events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Emphasis)));
         assert!(has_emphasis);
     }
 

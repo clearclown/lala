@@ -6,7 +6,6 @@
 /// - Formatted lists
 /// - Code blocks with highlighting
 /// - Bold and italic text
-
 use colored::*;
 use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 

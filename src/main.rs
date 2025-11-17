@@ -1,5 +1,7 @@
 use eframe::egui;
-use lala::cli::{html_view, latex_view, markdown_view, mermaid_view, parse_args_default, StartupMode};
+use lala::cli::{
+    html_view, latex_view, markdown_view, mermaid_view, parse_args_default, StartupMode,
+};
 use lala::LalaApp;
 use std::fs;
 use std::process;
@@ -13,11 +15,12 @@ fn setup_custom_fonts(ctx: &egui::Context) {
 
     // Load system fonts that support Japanese characters
     // Try to load CJK fonts from system if available
-    if let Ok(font_data) = std::fs::read("/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf")
-        .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"))
-        .or_else(|_| std::fs::read("/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc"))
-        .or_else(|_| std::fs::read("/System/Library/Fonts/Hiragino Sans GB.ttc"))
-        .or_else(|_| std::fs::read("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"))
+    if let Ok(font_data) =
+        std::fs::read("/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf")
+            .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"))
+            .or_else(|_| std::fs::read("/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc"))
+            .or_else(|_| std::fs::read("/System/Library/Fonts/Hiragino Sans GB.ttc"))
+            .or_else(|_| std::fs::read("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"))
     {
         fonts.font_data.insert(
             "NotoSansCJK".to_owned(),
@@ -144,10 +147,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
 
-        StartupMode::ViewFile {
-            file,
-            line_numbers,
-        } => {
+        StartupMode::ViewFile { file, line_numbers } => {
             // Read file
             let content = fs::read_to_string(&file).unwrap_or_else(|err| {
                 eprintln!("Error reading file {:?}: {}", file, err);

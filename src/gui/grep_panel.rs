@@ -101,8 +101,8 @@ impl GrepPanel {
 
         // Search button
         ui.horizontal(|ui| {
-            let can_search = !self.search_query.is_empty()
-                && grep_engine.status() != GrepStatus::Searching;
+            let can_search =
+                !self.search_query.is_empty() && grep_engine.status() != GrepStatus::Searching;
 
             if ui
                 .add_enabled(can_search, egui::Button::new("🔍 Search"))
@@ -141,7 +141,10 @@ impl GrepPanel {
             GrepStatus::Searching => {
                 ui.horizontal(|ui| {
                     ui.spinner();
-                    ui.label(format!("Searching... Found {} results", grep_engine.result_count()));
+                    ui.label(format!(
+                        "Searching... Found {} results",
+                        grep_engine.result_count()
+                    ));
                 });
             }
             GrepStatus::Completed => {
@@ -229,12 +232,7 @@ impl GrepPanel {
 
             // Jump button
             if ui.small_button("→").clicked() {
-                self.jump_to_result(
-                    result,
-                    buffers,
-                    active_buffer_id,
-                    next_buffer_id,
-                );
+                self.jump_to_result(result, buffers, active_buffer_id, next_buffer_id);
             }
         });
     }
@@ -290,11 +288,7 @@ impl GrepPanel {
         let buffer_id = BufferId(*next_buffer_id);
         *next_buffer_id += 1;
 
-        let buffer = Buffer::from_string(
-            buffer_id,
-            content,
-            Some(result.file_path.clone()),
-        );
+        let buffer = Buffer::from_string(buffer_id, content, Some(result.file_path.clone()));
 
         buffers.insert(buffer_id, buffer);
         *active_buffer_id = Some(buffer_id);

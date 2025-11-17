@@ -5,7 +5,6 @@
 /// - Position and Range handling
 /// - Multi-byte character support (Japanese, emojis)
 /// - Edge cases and error handling
-
 use lala::core_engine::{Buffer, BufferId, Position, Range};
 
 // === Basic Buffer Operations ===
@@ -110,7 +109,10 @@ fn test_very_long_line() {
 
 #[test]
 fn test_many_lines() {
-    let text = (0..1000).map(|i| format!("Line {}", i)).collect::<Vec<_>>().join("\n");
+    let text = (0..1000)
+        .map(|i| format!("Line {}", i))
+        .collect::<Vec<_>>()
+        .join("\n");
     let buffer = Buffer::from_string(BufferId(0), text.clone(), None);
 
     assert_eq!(buffer.line_count(), 1000);
@@ -161,7 +163,7 @@ fn test_multiline_range_creation() {
 
     // Get range from middle of line 1 to middle of line 2
     let start = Position::new(0, 3); // "e 1\n"
-    let end = Position::new(1, 4);   // "Line"
+    let end = Position::new(1, 4); // "Line"
 
     let range = Range::new(start, end);
     assert_eq!(range.start, start);
@@ -175,8 +177,12 @@ fn test_buffer_dirty_after_multiple_edits() {
     let mut buffer = Buffer::from_string(BufferId(0), "Test".to_string(), None);
 
     // Multiple edits
-    buffer.replace_range(Range::new(Position::new(0, 0), Position::new(0, 1)), "B").unwrap();
-    buffer.replace_range(Range::new(Position::new(0, 1), Position::new(0, 2)), "o").unwrap();
+    buffer
+        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 1)), "B")
+        .unwrap();
+    buffer
+        .replace_range(Range::new(Position::new(0, 1), Position::new(0, 2)), "o")
+        .unwrap();
 
     assert!(buffer.is_dirty());
     assert_eq!(buffer.content(), "Bost");
@@ -186,13 +192,17 @@ fn test_buffer_dirty_after_multiple_edits() {
 fn test_buffer_mark_clean_and_dirty_again() {
     let mut buffer = Buffer::from_string(BufferId(0), "Test".to_string(), None);
 
-    buffer.replace_range(Range::new(Position::new(0, 0), Position::new(0, 1)), "B").unwrap();
+    buffer
+        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 1)), "B")
+        .unwrap();
     assert!(buffer.is_dirty());
 
     buffer.mark_clean();
     assert!(!buffer.is_dirty());
 
-    buffer.replace_range(Range::new(Position::new(0, 1), Position::new(0, 2)), "o").unwrap();
+    buffer
+        .replace_range(Range::new(Position::new(0, 1), Position::new(0, 2)), "o")
+        .unwrap();
     assert!(buffer.is_dirty());
 }
 

@@ -1,7 +1,6 @@
 /// End-to-end integration tests
 ///
 /// These tests verify complete workflows combining multiple modules
-
 use lala::core_engine::{Buffer, BufferId, Position, Range};
 use std::fs;
 use tempfile::TempDir;
@@ -28,7 +27,10 @@ fn test_complete_edit_workflow() {
     let range = Range::new(Position::new(0, 6), Position::new(0, 11)); // "World"
     buffer.replace_range(range, "Rust").unwrap();
 
-    assert_eq!(buffer.content(), "Hello Rust\nThis is a test\nGoodbye World");
+    assert_eq!(
+        buffer.content(),
+        "Hello Rust\nThis is a test\nGoodbye World"
+    );
     assert!(buffer.is_dirty());
 
     // 4. Save
@@ -46,11 +48,7 @@ fn test_complete_edit_workflow() {
 
 #[test]
 fn test_manual_search_and_replace_workflow() {
-    let mut buffer = Buffer::from_string(
-        BufferId(0),
-        "foo bar foo baz".to_string(),
-        None,
-    );
+    let mut buffer = Buffer::from_string(BufferId(0), "foo bar foo baz".to_string(), None);
 
     // Manually find and replace first "foo"
     let range1 = Range::new(Position::new(0, 0), Position::new(0, 3));
@@ -112,7 +110,8 @@ fn test_markdown_editing_workflow() {
     let file_path = temp_dir.path().join("document.md");
 
     // 1. Create markdown file
-    let initial_markdown = "# Title\n\n## Section 1\n\nParagraph text.\n\n## Section 2\n\nMore text.";
+    let initial_markdown =
+        "# Title\n\n## Section 1\n\nParagraph text.\n\n## Section 2\n\nMore text.";
     fs::write(&file_path, initial_markdown).unwrap();
 
     // 2. Load and edit
@@ -142,7 +141,6 @@ fn test_markdown_editing_workflow() {
 #[test]
 
 // === Large File Workflow ===
-
 
 // === Undo/Redo Workflow (if implemented) ===
 
@@ -201,11 +199,7 @@ fn test_multiple_buffers() {
 
     // Create multiple buffers
     for i in 0..10 {
-        let buffer = Buffer::from_string(
-            BufferId(i),
-            format!("Buffer {}", i),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(i), format!("Buffer {}", i), None);
         buffers.push(buffer);
     }
 
@@ -216,7 +210,9 @@ fn test_multiple_buffers() {
 
     // Edit specific buffer
     let range = Range::new(Position::new(0, 0), Position::new(0, 8));
-    buffers[5].replace_range(range, "Modified Buffer 5").unwrap();
+    buffers[5]
+        .replace_range(range, "Modified Buffer 5")
+        .unwrap();
 
     assert_eq!(buffers[5].content(), "Modified Buffer 5");
     assert_eq!(buffers[4].content(), "Buffer 4"); // Other buffers unchanged
@@ -262,7 +258,10 @@ fn test_file_extension_detection() {
         markdown_buffer.file_path().unwrap().extension().unwrap(),
         "md"
     );
-    assert_eq!(html_buffer.file_path().unwrap().extension().unwrap(), "html");
+    assert_eq!(
+        html_buffer.file_path().unwrap().extension().unwrap(),
+        "html"
+    );
     assert_eq!(
         latex_buffer.file_path().unwrap().extension().unwrap(),
         "tex"
