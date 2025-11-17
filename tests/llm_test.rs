@@ -23,19 +23,17 @@ fn test_gemini_client_without_api_key() {
 
 #[test]
 fn test_gemini_client_with_empty_api_key() {
-    std::env::set_var("GEMINI_API_KEY", "");
-
-    let result = GeminiClient::from_env();
-    // Empty API key should now fail due to validation
+    // Test using new() directly to avoid env var interference
+    let result = GeminiClient::new("".to_string());
+    // Empty API key should fail due to validation
     assert!(result.is_err());
     assert!(result.unwrap_err().contains("API key cannot be empty"));
 }
 
 #[test]
 fn test_gemini_client_with_valid_api_key() {
-    std::env::set_var("GEMINI_API_KEY", "test_api_key_12345");
-
-    let result = GeminiClient::from_env();
+    // Test using new() directly to avoid env var interference
+    let result = GeminiClient::new("test_api_key_12345".to_string());
     assert!(result.is_ok());
 }
 
@@ -116,12 +114,11 @@ fn test_multiple_client_instances() {
 
 #[test]
 fn test_client_after_api_key_change() {
-    std::env::set_var("GEMINI_API_KEY", "key1");
-    let client1 = GeminiClient::from_env();
+    // Test using new() directly to avoid env var interference
+    let client1 = GeminiClient::new("key1".to_string());
     assert!(client1.is_ok());
 
-    std::env::set_var("GEMINI_API_KEY", "key2");
-    let client2 = GeminiClient::from_env();
+    let client2 = GeminiClient::new("key2".to_string());
     assert!(client2.is_ok());
 }
 

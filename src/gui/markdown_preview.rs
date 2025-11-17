@@ -47,7 +47,11 @@ WebViewやHTMLレンダラーを使用せず、純粋なRust + eguiウィジェ�
 */
 
 use eframe::egui;
-use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use syntect::easy::HighlightLines;
+use syntect::highlighting::{Style, ThemeSet};
+use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;
 
 /// Markdown文字列をeguiでレンダリングする
 ///
@@ -167,7 +171,13 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
             }
 
             // ========== コードブロック (Code Blocks) ==========
-            Event::Start(Tag::CodeBlock(_)) => {
+            Event::Start(Tag::CodeBlock(kind)) => {
+                // Extract language tag
+                let lang = match kind {
+                    CodeBlockKind::Fenced(lang) => lang.to_string(),
+                    CodeBlockKind::Indented => String::new(),
+                };
+
                 i += 1;
                 let code = extract_text_until_end(&events[i..], TagEnd::CodeBlock);
 
@@ -176,11 +186,17 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                     .fill(ui.style().visuals.code_bg_color)
                     .inner_margin(egui::Margin::same(8))
                     .show(ui, |ui| {
-                        ui.label(
-                            egui::RichText::new(code)
-                                .monospace()
-                                .color(egui::Color32::from_rgb(200, 200, 200)),
-                        );
+                        // Apply syntax highlighting if language is specified
+                        if !lang.is_empty() && !code.is_empty() {
+                            render_highlighted_code(ui, &code, &lang);
+                        } else {
+                            // Fallback to plain monospace
+                            ui.label(
+                                egui::RichText::new(code)
+                                    .monospace()
+                                    .color(egui::Color32::from_rgb(200, 200, 200)),
+                            );
+                        }
                     });
                 ui.add_space(5.0);
 
@@ -279,6 +295,44 @@ fn extract_rich_text(events: &[Event], end_tag: TagEnd) -> egui::RichText {
     }
 
     rich
+}
+
+/// Render syntax-highlighted code block
+fn render_highlighted_code(ui: &mut egui::Ui, code: &str, lang: &str) {
+    // Load syntax definitions and theme
+    let ps = SyntaxSet::load_defaults_newlines();
+    let ts = ThemeSet::load_defaults();
+
+    // Try to find syntax by language name or extension
+    let syntax = ps
+        .find_syntax_by_extension(lang)
+        .or_else(|| ps.find_syntax_by_name(lang))
+        .or_else(|| ps.find_syntax_by_first_line(code))
+        .unwrap_or_else(|| ps.find_syntax_plain_text());
+
+    let theme = &ts.themes["base16-ocean.dark"];
+    let mut highlighter = HighlightLines::new(syntax, theme);
+
+    // Render each line with syntax highlighting
+    for line in LinesWithEndings::from(code) {
+        let ranges = highlighter.highlight_line(line, &ps).unwrap_or_default();
+
+        ui.horizontal(|ui| {
+            for (style, text) in ranges {
+                let color = style_to_color(style);
+                ui.label(egui::RichText::new(text).monospace().color(color));
+            }
+        });
+    }
+}
+
+/// Convert syntect Style to egui Color32
+fn style_to_color(style: Style) -> egui::Color32 {
+    egui::Color32::from_rgb(
+        style.foreground.r,
+        style.foreground.g,
+        style.foreground.b,
+    )
 }
 
 // ========== ユニットテスト ==========

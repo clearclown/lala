@@ -1,463 +1,330 @@
-# Lala Editor
+<div align="center">
 
-[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
-[![Crates.io](https://img.shields.io/crates/v/lala.svg)](https://crates.io/crates/lala)
-[![CI](https://github.com/yourusername/lala/workflows/CI/badge.svg)](https://github.com/yourusername/lala/actions)
+# 🎵 Lala
 
-**Read this in other languages**: [日本語](docs/README_ja.md) | [فارسی](docs/README_fa.md) | [العربية](docs/README_ar.md) | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [Русский](docs/README_ru.md)
+**モダンで軽量なマルチフォーマット対応テキストエディタ**
 
-A modern, lightweight text editor with **both GUI and CLI** built with Rust, egui, and eframe.
+[![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://www.rust-lang.org/)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen.svg)]()
 
-**NEW**: Now with comprehensive command-line interface! Preview **Markdown, HTML, Mermaid diagrams, and LaTeX** documents with beautiful terminal formatting, plus file viewing with line numbers - all from your terminal!
+[English](./docs/readmeLangs/README_en.md) | [日本語](README.md) | [简体中文](./docs/readmeLangs/README_zh-CN.md) | [繁體中文](./docs/readmeLangs/README_zh-TW.md) | [Русский](./docs/readmeLangs/README_ru.md) | [فارسی](./docs/readmeLangs/README_fa.md) | [العربية](./docs/readmeLangs/README_ar.md)
 
-## Features
-
-### ✨ File Tree View
-- **Tree Display**: Browse directories and files in a hierarchical tree view in the left sidebar
-- **Directory Expansion**: Click folder icons to expand/collapse directories
-- **File Opening**: Click on files to open them in editor tabs
-- **Async Loading**: Non-blocking directory scanning prevents UI freezes
-- **Smart Filtering**:
-  - Respects `.gitignore` files (when in a git repository)
-  - Filters out `.git` directories automatically
-  - Does not follow symbolic links (for security)
-- **Error Handling**: Displays access denied messages for restricted directories
-- **Performance**: Optimized for large directories (like `node_modules`)
-
-### 📝 Text Editing
-- **Text Display**: Efficiently displays text from Rope buffer
-- **Text Input**: Full keyboard input support (characters, backspace, enter, delete)
-- **Cursor Management**: Smooth cursor navigation and positioning
-- **Multi-tab Editing**: Open multiple files simultaneously
-- **Tab Management**: Close tabs with the × button
-- **Unsaved Changes Indicator**: Visual indicators for modified files
-
-### 🔍 Advanced Search
-- **Grep Integration**: Fast file-wide search using ripgrep
-- **Multi-file Search**: Search across multiple files in directories
-- **Replace Functionality**: Find and replace text in files
-- **Regex Support**: Full regular expression support for advanced patterns
-- **Search Panel**: Dedicated panel for search operations
-- **Context Display**: Shows matching lines with context
-
-### 🎨 Syntax Highlighting
-- **Code Editor**: Monospace font for code editing
-- **Language Detection**: Automatic syntax detection based on file extension
-- **Color Themes**: Syntax highlighting with customizable themes
-- **Multiple Languages**: Support for various programming languages via syntect
-
-### 📖 Multi-Format Preview (GUI & CLI)
-- **Markdown Preview**:
-  - GUI: GitHub-style rendering with rich formatting in split view
-  - CLI: Terminal rendering with color support
-- **HTML Preview**:
-  - GUI: Formatted text display with element extraction
-  - CLI: Beautiful HTML display with tables, lists, and links
-- **Mermaid Diagrams**:
-  - GUI: Visual diagram rendering
-  - CLI: ASCII art flowcharts, sequence diagrams, and more
-- **LaTeX Documents**:
-  - GUI: Unicode math symbols (√, ∫, ∑, α, β, etc.) with live preview
-  - CLI: Terminal rendering with Unicode symbols
-- **Split View**: Edit on left, preview on right (Ctrl+P to toggle)
-- **Auto-Detection**: Automatically detects file type (.md, .html, .tex, .mmd)
-- **Pure Rust**: No WebView dependencies, rendered directly with egui or terminal
-
-## Architecture
-
-This is a single-crate application with a modular structure:
-
-```
-lala/
-├── Cargo.toml          # Package configuration
-├── README.md           # This file
-└── src/
-    ├── main.rs         # Entry point
-    ├── lib.rs          # Library exports
-    ├── app.rs          # Application state
-    ├── cli/            # CLI argument parsing
-    ├── core/           # Core editing engine
-    │   ├── error.rs    # Error types
-    │   ├── rope.rs     # Text buffer (Rope-based)
-    │   └── mod.rs      # Module exports
-    ├── core_engine/    # Core engine buffer implementation
-    │   ├── buffer.rs   # Text buffer
-    │   └── mod.rs      # Module exports
-    ├── file_tree/      # File tree view
-    │   └── mod.rs      # File tree implementation
-    ├── gui/            # GUI components
-    │   ├── app.rs      # Main application
-    │   ├── app_state.rs# Application state
-    │   ├── editor.rs   # Editor panel
-    │   ├── highlighting.rs # Syntax highlighting
-    │   ├── markdown_preview.rs # Markdown renderer
-    │   ├── search_panel.rs # Search UI
-    │   ├── grep_panel.rs   # Grep UI
-    │   ├── tab.rs      # Tab management
-    │   └── mod.rs      # Module exports
-    └── search/         # Search functionality
-        ├── buffer_search.rs # Buffer search
-        ├── grep.rs     # Grep integration
-        └── mod.rs      # Module exports
-```
-
-### Core Components
-
-#### Text Buffer (`core/rope.rs`)
-The core editing engine uses a Rope-based text buffer for efficient editing:
-- Supports efficient insert/delete operations on large files
-- Character-indexed operations
-- Line-based operations
-- Memory-efficient for large documents
-
-#### Async Directory Loading (`file_tree/`)
-The file tree uses async I/O to prevent UI freezes:
-1. **Background Thread**: Directory scanning happens in separate threads using `tokio::spawn`
-2. **Channel Communication**: Results are sent to the GUI thread via `flume` channels
-3. **Incremental Updates**: The tree updates as directories are scanned
-4. **Depth Limiting**: Initial load is limited to prevent overwhelming the UI
-
-#### Syntax Highlighting (`gui/highlighting.rs`)
-Uses `syntect` for professional-grade syntax highlighting:
-- Supports multiple languages
-- Theme customization
-- Fast and efficient
-
-#### Markdown Preview (`gui/markdown_preview.rs`)
-Pure Rust Markdown rendering:
-- Uses `pulldown-cmark` for parsing
-- Renders directly to egui widgets
-- No WebView or HTML dependencies
-- Real-time updates
-
-## Building and Running
-
-### Prerequisites
-- Rust 1.70 or later
-- Cargo
-
-### Build
-```bash
-# Debug build
-cargo build
-
-# Release build (optimized)
-cargo build --release
-```
-
-### Run
-
-#### GUI Mode (Default)
-```bash
-# Run in development mode
-cargo run
-
-# Run release build
-./target/release/lala
-
-# Open specific file or directory
-./target/release/lala file.txt
-./target/release/lala /path/to/project
-```
-
-#### CLI Mode (NEW!)
-```bash
-# Preview Markdown with beautiful formatting
-./target/release/lala markdown README.md
-
-# Preview HTML files
-./target/release/lala html page.html
-
-# Preview Mermaid diagrams
-./target/release/lala mermaid diagram.mmd
-
-# Preview LaTeX documents with Unicode math symbols
-./target/release/lala latex document.tex
-
-# View file with line numbers
-./target/release/lala view -n src/main.rs
-
-# See all available commands
-./target/release/lala --help
-
-# Get help for specific command
-./target/release/lala markdown --help
-./target/release/lala html --help
-./target/release/lala mermaid --help
-./target/release/lala latex --help
-```
-
-**See [CLI Usage Guide](docs/ja/CLI使い方.md) for complete CLI documentation and [Format Support](docs/ja/フォーマット対応.md) for format-specific details.**
-
-### Test
-```bash
-# Run all tests
-cargo test
-
-# Run with output
-cargo test -- --nocapture
-
-# Run tests for specific module
-cargo test --lib core
-```
-
-### Lint
-```bash
-# Check for common mistakes
-cargo clippy --all-targets --all-features
-
-# Apply automatic fixes
-cargo clippy --fix
-```
-
-## Dependencies
-
-Core dependencies:
-- **eframe** / **egui**: Immediate mode GUI framework
-- **ropey**: Rope data structure for efficient text editing
-- **tokio**: Async runtime for non-blocking operations
-- **ignore**: Git-aware file walking (respects .gitignore)
-- **flume**: Fast multi-producer multi-consumer channels
-- **syntect**: Syntax highlighting engine
-- **pulldown-cmark**: Markdown parser
-- **html2text**: HTML to text conversion
-- **scraper**: HTML parsing and DOM manipulation
-- **regex**: Regular expression support
-- **anyhow**: Error handling
-- **thiserror**: Error type derivation
-- **serde**: Serialization support
-- **clap**: Command-line argument parsing
-- **colored**: Terminal colors and formatting
-- **terminal_size**: Terminal size detection
-
-## Keyboard Shortcuts
-
-### File Operations (GUI Mode)
-- **Ctrl+N**: New file
-- **Ctrl+O**: Open file
-- **Ctrl+S**: Save file
-- **Ctrl+Shift+S**: Save as
-- **Ctrl+P**: Toggle preview panel
-- **Ctrl+F**: Find
-- **Ctrl+H**: Replace
-- **Ctrl+Shift+F**: Grep search
-
-### Navigation (GUI Mode)
-- **Arrow Keys**: Move cursor
-- **Page Up/Down**: Scroll
-- **Home/End**: Jump to line start/end
-
-### Text Editing (GUI Mode)
-- **Backspace**: Delete character before cursor
-- **Delete**: Delete character at cursor
-- **Enter**: Insert newline
-- **Tab**: Insert tab/spaces
-
-## IME Support (Japanese, Chinese, Korean Input)
-
-Lala supports IME (Input Method Editor) for typing in Japanese, Chinese, Korean, and other languages on all platforms.
-
-### Linux (ibus-mozc, fcitx)
-
-IME is automatically enabled when the text editor has focus. For best results:
-
-**Easy Way (Recommended):**
-```bash
-# Use the provided launcher script that auto-detects your IME
-./lala-ime.sh
-```
-
-**Troubleshooting (If Japanese input doesn't work):**
-```bash
-# Use the debug script to diagnose and fix IME issues
-./lala-ime-debug.sh
-```
-
-This script will:
-- Restart ibus-daemon
-- Set all required environment variables (including critical GLFW_IM_MODULE)
-- Display diagnostic information
-- Launch lala with correct settings
-
-**Manual Way:**
-```bash
-# If using ibus (recommended for Japanese)
-export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
-export QT_IM_MODULE=ibus
-export GLFW_IM_MODULE=ibus  # CRITICAL for egui/winit apps
-
-# If using fcitx
-export GTK_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
-export QT_IM_MODULE=fcitx
-export GLFW_IM_MODULE=fcitx
-
-# Make sure ibus-daemon is running
-ibus-daemon -drx
-
-# Then run lala
-./target/release/lala
-```
-
-For detailed troubleshooting, see [IME-TROUBLESHOOTING.md](IME-TROUBLESHOOTING.md).
-
-### macOS
-
-IME works out of the box. Simply:
-1. Enable Japanese input in System Preferences → Keyboard → Input Sources
-2. Launch Lala
-3. Switch to Japanese input (Ctrl+Space or Cmd+Space)
-4. Start typing
-
-### Windows
-
-IME works out of the box. Simply:
-1. Enable Japanese input (Windows Key + Space)
-2. Launch Lala
-3. Start typing in Japanese
-
-**Note**: The editor automatically enables IME when you click inside the text area.
-
-## CLI Commands
-
-```bash
-# Markdown preview
-lala markdown <FILE> [--no-color]
-
-# HTML preview
-lala html <FILE> [--no-color]
-
-# Mermaid diagram preview
-lala mermaid <FILE> [--no-color]
-
-# LaTeX document preview
-lala latex <FILE> [--no-color]
-
-# File viewing
-lala view <FILE> [-n|--line-numbers]
-
-# Help
-lala --help
-lala markdown --help
-lala html --help
-lala mermaid --help
-lala latex --help
-lala view --help
-```
-
-**For detailed CLI usage, examples, and tips, see [CLI Usage Guide](docs/ja/CLI使い方.md) and [Format Support](docs/ja/フォーマット対応.md).**
-
-## Development
-
-### Project Status
-
-This project merges multiple feature branches:
-- ✅ File tree view with async loading
-- ✅ Basic text editing functionality
-- ✅ GUI foundation with tab system
-- ✅ CLI argument parser
-- ✅ Core engine implementation
-- ✅ Syntax highlighting
-- ✅ Markdown preview
-- ✅ Advanced search and replace
-
-### Performance Considerations
-
-The editor is designed for efficiency:
-- **Rope Data Structure**: O(log n) insertions and deletions
-- **Async I/O**: Non-blocking file operations
-- **Incremental Rendering**: Only redraw changed regions
-- **Memory Efficient**: Suitable for large files (tested up to 10MB)
-
-### Security Considerations
-- **Symlink Handling**: Symbolic links are not followed to prevent infinite loops
-- **Permission Errors**: Access denied errors are caught and displayed gracefully
-- **Input Sanitization**: All user input is properly validated
-
-## Future Enhancements
-
-Planned features:
-- Multiple cursors support
-- Split view editing
-- Integrated terminal
-- Git integration with diff view
-- Plugin system
-- Customizable keybindings
-- Themes and color schemes
-- Find in files with preview
-- Code folding
-- Minimap view
-- LSP (Language Server Protocol) support
-
-## Installation
-
-### Quick Install
-
-```bash
-# Cargo (Recommended)
-cargo install lala
-
-# Universal installer (Linux/macOS)
-curl -sSL https://raw.githubusercontent.com/yourusername/lala/main/packaging/scripts/install.sh | bash
-
-# Homebrew (macOS)
-brew install lala
-
-# APT (Debian/Ubuntu)
-sudo apt install lala
-
-# Pacman (Arch Linux)
-yay -S lala
-
-# Chocolatey (Windows)
-choco install lala
-```
-
-For detailed installation instructions, see [Installation Guide](docs/ja/インストール.md).
-
-## Documentation
-
-### For Users
-- 📖 [Installation Guide](docs/ja/インストール.md) - Complete installation instructions
-- 🚀 [Beginner's Guide](docs/ja/初心者ガイド.md) - Start here if you're new to Lala
-- 💻 [CLI Usage Guide](docs/ja/CLI使い方.md) - Command-line interface documentation
-- 📝 [Format Support](docs/ja/フォーマット対応.md) - Supported formats and rendering details
-
-### For Developers
-- 🏗️ [Implementation Details](docs/development/implementation.md) - Architecture and design
-- 📋 [Project Status](docs/development/project-status.md) - Current development status
-- 🔧 [CLI Design](docs/development/cli-design.md) - CLI architecture
-
-### For Contributors
-- 🤝 [Contributing Guidelines](docs/community/CONTRIBUTING.md) - How to contribute
-- 📜 [Code of Conduct](docs/community/CODE_OF_CONDUCT.md) - Community standards
-- 🔒 [Security Policy](docs/community/SECURITY.md) - Reporting security issues
-- 📰 [Changelog](docs/CHANGELOG.md) - Release history
-
-### Package Maintainers
-- 📦 [Publishing Guide](docs/development/publishing-guide.md) - How to publish to package managers
-
-## Contributing
-
-We welcome contributions! Please read our [Contributing Guidelines](docs/community/CONTRIBUTING.md) before submitting pull requests.
-
-## License
-
-This project is dual-licensed under:
-- MIT License ([LICENSE-MIT](LICENSE-MIT))
-- Apache License 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-
-You may choose either license.
-
-## Links
-
-- 🏠 [Homepage](https://github.com/yourusername/lala)
-- 📦 [Crates.io](https://crates.io/crates/lala)
-- 📖 [Documentation](https://github.com/yourusername/lala/tree/main/docs)
-- 🐛 [Issue Tracker](https://github.com/yourusername/lala/issues)
-- 💬 [Discussions](https://github.com/yourusername/lala/discussions)
+</div>
 
 ---
 
-Made with ❤️ by the Lala community
+## 📸 スクリーンショット
+
+### ダークテーマでのMarkdown編集
+*コードブロックの構文ハイライト、リアルタイムプレビュー*
+
+### ライトテーマでの執筆
+*目に優しい配色、日本語IME完全対応*
+
+### マルチフォーマットプレビュー
+*Markdown、HTML、LaTeX、Mermaid図を即座にプレビュー*
+
+---
+
+## 💡 Lalaとは？
+
+Lalaは**Rust**で書かれた次世代テキストエディタです。純粋なRust GUI フレームワーク **egui** を使用し、軽量かつ高速な動作を実現しています。
+
+### なぜLalaが必要なのか？
+
+既存のテキストエディタには以下の課題があります：
+
+- 🐌 **重量級**: ElectronベースのエディタはメモリとCPUを大量消費
+- 🌐 **ネイティブ感の欠如**: Webベースエディタは応答性に欠ける
+- 📝 **プレビューの不便さ**: Markdownやその他形式のリアルタイムプレビューが不十分
+- 🌏 **IME対応の不完全さ**: 日本語・中国語など複雑な入力メソッドのサポートが不十分
+
+Lalaはこれらの問題を解決します。
+
+---
+
+## ✨ 主な機能
+
+### 🎨 マルチフォーマット対応
+- **Markdown**: リアルタイムプレビュー、構文ハイライト
+- **HTML**: パース&レンダリング
+- **LaTeX**: 数式・記号のUnicode変換プレビュー
+- **Mermaid**: フローチャート・シーケンス図の可視化
+
+### 🚀 高性能
+- **軽量**: Rustのゼロコスト抽象化による高速起動（<100ms）
+- **効率的**: Rope データ構造による大容量ファイルの高速編集
+- **ネイティブ**: Electron不要、システムリソースへの負荷が最小限
+
+### 🌏 日本語完全対応
+- **IME対応**: 日本語・中国語・韓国語の入力メソッドをネイティブサポート
+- **Unicodeサポート**: 絵文字・記号を含む全Unicode文字に対応
+
+### 🤖 AI統合（オプション）
+- **Gemini API統合**: テキストの自動改善
+- **文法修正**: スペル・文法エラーの自動検出と修正
+- **要約機能**: 長文の自動要約
+
+### 🔍 強力な検索機能
+- **バッファ内検索**: 正規表現対応の高速検索・置換
+- **Grep機能**: プロジェクト全体を対象とした高速検索
+- **.gitignore対応**: 不要なファイルを自動除外
+
+### 🎨 テーマ
+- **ダークテーマ**: 長時間の作業に最適
+- **ライトテーマ**: カスタマイズされた視認性の高い配色
+
+---
+
+## 📦 インストール
+
+### 前提条件
+- Rust 1.70以上
+- Cargo（Rustツールチェーンに含まれます）
+
+### Cargoからインストール（推奨）
+
+```bash
+cargo install lala
+```
+
+### ソースからビルド
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/clearclown/lala.git
+cd lala
+
+# リリースビルド
+cargo build --release
+
+# バイナリは target/release/lala に生成されます
+# オプション: システムにインストール
+cargo install --path .
+```
+
+### AI機能を有効化（オプション）
+
+```bash
+# llm機能を有効にしてビルド
+cargo build --release --features llm
+
+# または
+cargo install --path . --features llm
+```
+
+---
+
+## 🚀 使い方
+
+### GUIモードで起動
+
+```bash
+# 空のエディタを起動
+lala
+
+# 特定のファイルを開く
+lala README.md
+
+# ディレクトリを開く
+lala ./docs
+```
+
+### CLIモード（プレビュー）
+
+```bash
+# Markdownをターミナルでプレビュー
+lala README.md --preview
+
+# HTMLをプレビュー
+lala index.html --preview
+
+# LaTeXをプレビュー
+lala document.tex --preview
+```
+
+### キーボードショートカット
+
+| ショートカット | 機能 |
+|---------------|------|
+| `Ctrl+N` | 新規ファイル |
+| `Ctrl+O` | ファイルを開く |
+| `Ctrl+S` | 保存 |
+| `Ctrl+Shift+S` | 名前を付けて保存 |
+| `Ctrl+F` | 検索 |
+| `Ctrl+H` | 置換 |
+| `Ctrl+Shift+F` | プロジェクト全体を検索（Grep） |
+| `Ctrl+P` | プレビュー表示切替 |
+| `Esc` | パネルを閉じる |
+
+---
+
+## ⚙️ 設定
+
+### AI機能の設定
+
+1. **Gemini APIキーの取得**
+   - [Google AI Studio](https://ai.google.dev/tutorials/setup)でAPIキーを取得
+
+2. **環境変数の設定**
+   ```bash
+   export GEMINI_API_KEY="your-api-key-here"
+   ```
+
+3. **または、GUI設定から**
+   - `Tools > Settings` メニューを開く
+   - APIキーを入力
+   - "AI機能を有効化"をチェック
+
+### AI機能の使い方
+- **🤖 Improve Markdown**: Markdownの構造・書式を改善
+- **✨ Fix Grammar**: 文法・スペルミスを修正
+- **📝 Summarize**: テキストを要約
+
+---
+
+## 🗑️ アンインストール
+
+```bash
+# Cargoでインストールした場合
+cargo uninstall lala
+
+# または手動で削除
+rm ~/.cargo/bin/lala  # Linux/macOS
+# Windowsの場合: %USERPROFILE%\.cargo\bin\lala.exe を削除
+```
+
+---
+
+## 📚 ドキュメント
+
+### アーキテクチャ
+
+```
+lala/
+├── src/
+│   ├── main.rs              # エントリポイント
+│   ├── cli/                 # CLIインターフェース
+│   │   ├── markdown_view.rs # Markdownプレビュー
+│   │   ├── html_view.rs     # HTMLプレビュー
+│   │   ├── latex_view.rs    # LaTeXプレビュー
+│   │   └── mermaid_view.rs  # Mermaid図プレビュー
+│   ├── gui/                 # GUIインターフェース
+│   │   ├── app.rs          # メインアプリケーション
+│   │   ├── theme.rs        # テーマ設定
+│   │   ├── dialogs.rs      # ダイアログUI
+│   │   ├── menu.rs         # メニューバー
+│   │   ├── previews.rs     # プレビュー機能
+│   │   ├── markdown_preview.rs  # Markdownレンダラー
+│   │   └── search_panel.rs # 検索パネル
+│   ├── core_engine/        # コアエンジン
+│   │   └── buffer.rs       # テキストバッファ管理
+│   ├── search/             # 検索機能
+│   │   ├── buffer_search.rs # バッファ内検索
+│   │   └── grep.rs         # Grep検索
+│   ├── llm/                # LLM統合（オプション）
+│   │   └── mod.rs          # Gemini APIクライアント
+│   └── file_tree/          # ファイルツリー
+└── tests/                  # 171個のテスト
+```
+
+### 技術スタック
+
+- **言語**: Rust 2021 Edition
+- **GUIフレームワーク**: egui 0.33 + eframe
+- **テキスト処理**: ropey (Rope構造)
+- **Markdownパーサー**: pulldown-cmark
+- **構文ハイライト**: syntect
+- **非同期処理**: Tokio
+- **正規表現**: regex
+- **AI統合**: reqwest + Gemini API
+
+### テスト
+
+```bash
+# すべてのテストを実行
+cargo test --all-features
+
+# 特定のテストスイートを実行
+cargo test --test core_engine_test
+cargo test --test llm_test
+cargo test --test preview_test
+
+# 統合テスト
+cargo test --test end_to_end_test
+```
+
+
+---
+
+## 🤝 コントリビューション
+
+コントリビューションを歓迎します！以下の方法で貢献できます：
+
+### バグ報告・機能リクエスト
+1. [Issues](https://github.com/clearclown/lala/issues)で新しいIssueを作成
+2. バグの場合は再現手順を記載
+3. 機能リクエストの場合はユースケースを説明
+
+### プルリクエスト
+1. このリポジトリをフォーク
+2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m '✨ Add amazing feature'`)
+4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+5. プルリクエストを作成
+
+### 開発ガイドライン
+- コードスタイル: `cargo fmt` を使用
+- Linter: `cargo clippy` でチェック
+- テスト: 新機能には必ずテストを追加
+- ドキュメント: パブリックAPIには文書化コメントを記載
+
+---
+
+## 📖 リソース
+
+- [公式ドキュメント](https://github.com/clearclown/lala/blob/main/README.md)
+- [Issue Tracker](https://github.com/clearclown/lala/issues)
+- [変更履歴](https://github.com/clearclown/lala/blob/main/CHANGELOG.md)
+- [ロードマップ](https://github.com/clearclown/lala/blob/main/ROADMAP.md)
+
+### 関連プロジェクト
+- [egui](https://github.com/emilk/egui) - 純粋なRust GUIフレームワーク
+- [ropey](https://github.com/cessen/ropey) - 高速テキストRopeライブラリ
+- [pulldown-cmark](https://github.com/raphlinus/pulldown-cmark) - Markdownパーサー
+- [syntect](https://github.com/trishume/syntect) - 構文ハイライトライブラリ
+
+---
+
+## 📄 ライセンス
+
+このプロジェクトはデュアルライセンスです：
+
+- **MIT License** ([LICENSE-MIT](LICENSE-MIT) または http://opensource.org/licenses/MIT)
+- **Apache License 2.0** ([LICENSE-APACHE](LICENSE-APACHE) または http://www.apache.org/licenses/LICENSE-2.0)
+
+いずれかのライセンスを選択できます。
+
+### コントリビューション
+
+特に断りのない限り、Apache License 2.0で定義される通り、あなたが意図的にこのプロジェクトに提出した貢献は、追加の条項や条件なしに、上記のようにデュアルライセンスとなります。
+
+---
+
+## 🙏 謝辞
+
+以下のオープンソースプロジェクトに感謝します：
+- [Rust プログラミング言語](https://www.rust-lang.org/)
+- [egui コミュニティ](https://github.com/emilk/egui)
+- すべてのコントリビューター
+---
+
+<div align="center">
+
+**[⬆ トップに戻る](#-lala)**
+
+Made with ❤️ by the Lala contributors
+
+</div>

@@ -11,14 +11,11 @@ use super::grep_panel::GrepPanel;
 use super::markdown_preview;
 use super::search_panel::SearchPanel;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum PreviewMode {
-    Markdown,
-    Html,
-    Latex,
-    Mermaid,
-    None,
-}
+// Import new modules
+use super::dialogs;
+use super::menu;
+use super::previews::{self, PreviewMode};
+use super::theme;
 
 pub struct LalaApp {
     // Core components
@@ -110,55 +107,10 @@ impl LalaApp {
         }
     }
 
-    /// Creates a custom light theme with improved visibility
-    fn custom_light_theme() -> egui::Visuals {
-        let mut visuals = egui::Visuals::light();
-
-        // Background colors - light and clean
-        visuals.window_fill = egui::Color32::from_rgb(250, 250, 250); // Very light gray
-        visuals.panel_fill = egui::Color32::from_rgb(245, 245, 245); // Slightly darker gray
-        visuals.faint_bg_color = egui::Color32::from_rgb(240, 240, 240);
-
-        // Widget colors - clear and visible with dark text for high contrast
-        visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(255, 255, 255);
-        visuals.widgets.noninteractive.fg_stroke.color = egui::Color32::from_rgb(30, 30, 30);
-
-        visuals.widgets.inactive.bg_fill = egui::Color32::from_rgb(240, 240, 240);
-        visuals.widgets.inactive.fg_stroke.color = egui::Color32::from_rgb(40, 40, 40);
-
-        visuals.widgets.hovered.bg_fill = egui::Color32::from_rgb(220, 230, 245);
-        visuals.widgets.hovered.fg_stroke.color = egui::Color32::from_rgb(0, 0, 0);
-
-        visuals.widgets.active.bg_fill = egui::Color32::from_rgb(200, 220, 240);
-        visuals.widgets.active.fg_stroke.color = egui::Color32::from_rgb(0, 0, 0);
-
-        // Selection color - clear blue highlight
-        visuals.selection.bg_fill = egui::Color32::from_rgb(180, 210, 255);
-        visuals.selection.stroke.color = egui::Color32::from_rgb(100, 150, 220);
-
-        // Hyperlink color - visible blue
-        visuals.hyperlink_color = egui::Color32::from_rgb(0, 100, 200);
-
-        // Window stroke - subtle border
-        visuals.window_stroke.color = egui::Color32::from_rgb(200, 200, 200);
-
-        visuals
-    }
-
     fn detect_preview_mode(&self) -> PreviewMode {
         if let Some(buffer_id) = self.active_buffer_id {
             if let Some(buffer) = self.buffers.get(&buffer_id) {
-                if let Some(path) = buffer.file_path() {
-                    if let Some(ext) = path.extension() {
-                        return match ext.to_str() {
-                            Some("md") | Some("markdown") => PreviewMode::Markdown,
-                            Some("html") | Some("htm") => PreviewMode::Html,
-                            Some("tex") | Some("latex") => PreviewMode::Latex,
-                            Some("mmd") | Some("mermaid") => PreviewMode::Mermaid,
-                            _ => PreviewMode::None,
-                        };
-                    }
-                }
+                return previews::detect_preview_mode(buffer.file_path());
             }
         }
         PreviewMode::None
@@ -166,7 +118,8 @@ impl LalaApp {
 
     fn handle_keyboard_shortcuts(&mut self, ctx: &egui::Context) {
         // Ctrl+S: Save file
-        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::S)) {
+        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::S))
+        {
             self.save_file();
         }
 
@@ -186,7 +139,8 @@ impl LalaApp {
         }
 
         // Ctrl+F: Open search panel
-        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::F)) {
+        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::F))
+        {
             self.show_search_panel = true;
         }
 
@@ -302,206 +256,50 @@ impl LalaApp {
 
         // Menu bar
         egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
-            egui::MenuBar::new().ui(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("New (Ctrl+N)").clicked() {
-                        self.new_file();
-                        ui.close();
-                    }
-                    if ui.button("Open (Ctrl+O)").clicked() {
-                        self.show_file_dialog = true;
-                        ui.close();
-                    }
-                    if ui.button("Save (Ctrl+S)").clicked() {
-                        self.save_file();
-                        ui.close();
-                    }
-                    if ui.button("Save As (Ctrl+Shift+S)").clicked() {
-                        self.show_save_as_dialog = true;
-                        ui.close();
-                    }
-                });
+            let mut new_file = false;
+            let mut open_file = false;
+            let mut save_file = false;
+            let mut save_as = false;
+            let mut show_replace = false;
 
-                ui.menu_button("Edit", |ui| {
-                    if ui.button("Find (Ctrl+F)").clicked() {
-                        self.show_search_panel = true;
-                        ui.close();
-                    }
-                    if ui.button("Replace (Ctrl+H)").clicked() {
-                        self.show_search_panel = true;
-                        self.search_panel.set_replace_mode(true);
-                        ui.close();
-                    }
-                });
+            menu::render_menu_bar(
+                ui,
+                &mut new_file,
+                &mut open_file,
+                &mut save_file,
+                &mut save_as,
+                &mut self.show_search_panel,
+                &mut show_replace,
+                &mut self.show_grep_panel,
+                &mut self.show_settings,
+                &mut self.is_light_theme,
+                &mut self.show_preview,
+                &mut self.preview_mode,
+                &self.llm_status,
+                &self.llm_client,
+                self.ai_enabled,
+                &mut self.current_text,
+                &mut self.text_changed,
+                &self.buffers,
+                self.active_buffer_id,
+            );
 
-                ui.menu_button("Tools", |ui| {
-                    // Settings button
-                    if ui.button("⚙️ Settings").clicked() {
-                        self.show_settings = true;
-                        ui.close();
-                    }
-
-                    ui.separator();
-                    ui.label(&self.llm_status);
-                    ui.separator();
-
-                    let can_use_llm = self.llm_client.is_some() && self.ai_enabled;
-
-                    // AI text editing features
-                    if ui
-                        .add_enabled(can_use_llm, egui::Button::new("🤖 Improve Markdown"))
-                        .clicked()
-                    {
-                        if let Some(client) = &self.llm_client {
-                            match client.improve_markdown(&self.current_text) {
-                                Ok(improved) => {
-                                    self.current_text = improved;
-                                    self.text_changed = true;
-                                }
-                                Err(e) => {
-                                    eprintln!("LLM Error: {e}");
-                                }
-                            }
-                        }
-                        ui.close();
-                    }
-
-                    if ui
-                        .add_enabled(can_use_llm, egui::Button::new("✨ Fix Grammar"))
-                        .clicked()
-                    {
-                        if let Some(client) = &self.llm_client {
-                            match client.improve_markdown(&format!(
-                                "Fix grammar and spelling errors in this text:\n\n{}",
-                                &self.current_text
-                            )) {
-                                Ok(improved) => {
-                                    self.current_text = improved;
-                                    self.text_changed = true;
-                                }
-                                Err(e) => {
-                                    eprintln!("LLM Error: {e}");
-                                }
-                            }
-                        }
-                        ui.close();
-                    }
-
-                    if ui
-                        .add_enabled(can_use_llm, egui::Button::new("📝 Summarize"))
-                        .clicked()
-                    {
-                        if let Some(client) = &self.llm_client {
-                            match client.improve_markdown(&format!(
-                                "Summarize this text concisely:\n\n{}",
-                                &self.current_text
-                            )) {
-                                Ok(summary) => {
-                                    self.current_text = summary;
-                                    self.text_changed = true;
-                                }
-                                Err(e) => {
-                                    eprintln!("LLM Error: {e}");
-                                }
-                            }
-                        }
-                        ui.close();
-                    }
-
-                    if !can_use_llm {
-                        ui.label("💡 Tip: Enable AI in Settings");
-                    }
-                });
-
-                ui.menu_button("View", |ui| {
-                    // Theme toggle
-                    let theme_label = if self.is_light_theme {
-                        "🌙 Dark Theme"
-                    } else {
-                        "☀️ Light Theme"
-                    };
-                    if ui.button(theme_label).clicked() {
-                        self.is_light_theme = !self.is_light_theme;
-                        ui.close();
-                    }
-
-                    ui.separator();
-
-                    let preview_label = if self.show_preview {
-                        "Hide Preview (Ctrl+P)"
-                    } else {
-                        "Show Preview (Ctrl+P)"
-                    };
-                    if ui.button(preview_label).clicked() {
-                        self.show_preview = !self.show_preview;
-                        if self.show_preview {
-                            // Auto-detect or keep current mode
-                            let detected = self.detect_preview_mode();
-                            if detected != PreviewMode::None {
-                                self.preview_mode = detected;
-                            } else if self.preview_mode == PreviewMode::None {
-                                // Default to Markdown if no file extension
-                                self.preview_mode = PreviewMode::Markdown;
-                            }
-                        }
-                        ui.close();
-                    }
-
-                    ui.separator();
-                    ui.label("Preview Mode:");
-
-                    if ui
-                        .selectable_label(self.preview_mode == PreviewMode::Markdown, "Markdown")
-                        .clicked()
-                    {
-                        self.preview_mode = PreviewMode::Markdown;
-                        self.show_preview = true;
-                        ui.close();
-                    }
-
-                    if ui
-                        .selectable_label(self.preview_mode == PreviewMode::Html, "HTML")
-                        .clicked()
-                    {
-                        self.preview_mode = PreviewMode::Html;
-                        self.show_preview = true;
-                        ui.close();
-                    }
-
-                    if ui
-                        .selectable_label(self.preview_mode == PreviewMode::Latex, "LaTeX")
-                        .clicked()
-                    {
-                        self.preview_mode = PreviewMode::Latex;
-                        self.show_preview = true;
-                        ui.close();
-                    }
-
-                    if ui
-                        .selectable_label(self.preview_mode == PreviewMode::Mermaid, "Mermaid")
-                        .clicked()
-                    {
-                        self.preview_mode = PreviewMode::Mermaid;
-                        self.show_preview = true;
-                        ui.close();
-                    }
-                });
-
-                // Show file status
-                if let Some(buffer_id) = self.active_buffer_id {
-                    if let Some(buffer) = self.buffers.get(&buffer_id) {
-                        let file_name = buffer
-                            .file_path()
-                            .and_then(|p| p.file_name())
-                            .and_then(|n| n.to_str())
-                            .unwrap_or("Untitled");
-
-                        let dirty_marker = if self.text_changed { " *" } else { "" };
-                        ui.separator();
-                        ui.label(format!("{file_name}{dirty_marker}"));
-                    }
-                }
-            });
+            // Handle menu actions
+            if new_file {
+                self.new_file();
+            }
+            if open_file {
+                self.show_file_dialog = true;
+            }
+            if save_file {
+                self.save_file();
+            }
+            if save_as {
+                self.show_save_as_dialog = true;
+            }
+            if show_replace {
+                self.search_panel.set_replace_mode(true);
+            }
         });
 
         // Status bar
@@ -534,21 +332,20 @@ impl LalaApp {
                                 markdown_preview::render_markdown_preview(ui, &self.current_text);
                             }
                             PreviewMode::Html => {
-                                self.render_html_preview(ui);
+                                previews::render_html_preview(ui, &self.current_text);
                             }
                             PreviewMode::Latex => {
-                                self.render_latex_preview(ui);
+                                previews::render_latex_preview(ui, &self.current_text);
                             }
                             PreviewMode::Mermaid => {
-                                self.render_mermaid_preview(ui);
+                                previews::render_mermaid_preview(ui, &self.current_text);
                             }
                             PreviewMode::None => {}
                         });
                 });
         }
 
-        // Main editor - NO PADDING
-        // Set background color and text color based on theme
+        // Main editor
         let (bg_color, text_color) = if self.is_light_theme {
             (
                 egui::Color32::from_rgb(255, 255, 255), // White background
@@ -562,424 +359,33 @@ impl LalaApp {
         };
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::default().fill(bg_color).inner_margin(0.0)) // Set background color, no padding
+            .frame(egui::Frame::default().fill(bg_color).inner_margin(0.0))
             .show(ctx, |ui| {
                 let available_height = ui.available_height();
 
                 egui::ScrollArea::vertical()
                     .auto_shrink([false; 2])
                     .show(ui, |ui| {
-                        // TextEdit in egui 0.33+ automatically supports IME on all platforms
-                        // No manual IME configuration is needed
-
                         let response = ui.add(
                             egui::TextEdit::multiline(&mut self.current_text)
                                 .font(egui::TextStyle::Monospace)
                                 .desired_width(f32::INFINITY)
                                 .min_size(egui::vec2(f32::INFINITY, available_height))
-                                .frame(false) // No frame around text edit
+                                .frame(false)
                                 .background_color(bg_color)
                                 .text_color(text_color),
                         );
 
-                        // Request focus on first frame to ensure IME works immediately
+                        // Request focus on first frame
                         if self.current_text.is_empty() && !self.text_changed {
                             response.request_focus();
                         }
 
                         if response.changed() {
                             self.text_changed = true;
-                            // Don't auto-detect preview mode on text change
-                            // This prevents the preview from disappearing when editing
-                            // The user can manually change preview mode via View menu
                         }
                     });
             });
-    }
-
-    fn render_html_preview(&self, ui: &mut egui::Ui) {
-        ui.heading("HTML Preview");
-        ui.separator();
-
-        // Parse HTML and display as formatted text
-        use scraper::{Html, Selector};
-
-        let document = Html::parse_document(&self.current_text);
-
-        // Extract and display title
-        if let Ok(selector) = Selector::parse("title") {
-            for element in document.select(&selector) {
-                ui.heading(element.text().collect::<String>());
-                ui.separator();
-            }
-        }
-
-        // Extract and display body content
-        if let Ok(selector) = Selector::parse("body") {
-            for element in document.select(&selector) {
-                let text = element.text().collect::<Vec<_>>().join(" ");
-                ui.label(text);
-            }
-        } else {
-            // If no body tag, just show all text
-            ui.label(&self.current_text);
-        }
-    }
-
-    fn render_latex_preview(&self, ui: &mut egui::Ui) {
-        ui.heading("LaTeX Preview");
-        ui.separator();
-
-        // Simple LaTeX rendering with Unicode substitution
-        let mut preview_text = self.current_text.clone();
-
-        // Common LaTeX symbols to Unicode
-        let substitutions = vec![
-            (r"\alpha", "α"),
-            (r"\beta", "β"),
-            (r"\gamma", "γ"),
-            (r"\delta", "δ"),
-            (r"\epsilon", "ε"),
-            (r"\theta", "θ"),
-            (r"\lambda", "λ"),
-            (r"\mu", "μ"),
-            (r"\pi", "π"),
-            (r"\sigma", "σ"),
-            (r"\phi", "φ"),
-            (r"\omega", "ω"),
-            (r"\sqrt", "√"),
-            (r"\int", "∫"),
-            (r"\sum", "∑"),
-            (r"\prod", "∏"),
-            (r"\partial", "∂"),
-            (r"\nabla", "∇"),
-            (r"\infty", "∞"),
-            (r"\pm", "±"),
-            (r"\times", "×"),
-            (r"\div", "÷"),
-            (r"\leq", "≤"),
-            (r"\geq", "≥"),
-            (r"\neq", "≠"),
-            (r"\approx", "≈"),
-        ];
-
-        for (latex, unicode) in substitutions {
-            preview_text = preview_text.replace(latex, unicode);
-        }
-
-        ui.label(&preview_text);
-    }
-
-    fn render_mermaid_preview(&self, ui: &mut egui::Ui) {
-        ui.heading("Mermaid Diagram");
-        ui.separator();
-
-        // Simple ASCII art rendering
-        ui.label("Diagram Preview:");
-        ui.separator();
-
-        let lines: Vec<&str> = self.current_text.lines().collect();
-
-        for line in lines {
-            let trimmed = line.trim();
-            if trimmed.is_empty()
-                || trimmed.starts_with("graph")
-                || trimmed.starts_with("flowchart")
-            {
-                continue;
-            }
-
-            // Simple node rendering
-            if trimmed.contains("-->") || trimmed.contains("->") {
-                let parts: Vec<&str> = trimmed.split("-->").collect();
-                if parts.len() == 2 {
-                    ui.horizontal(|ui| {
-                        ui.monospace(format!("[{}]", parts[0].trim()));
-                        ui.label("→");
-                        ui.monospace(format!("[{}]", parts[1].trim()));
-                    });
-                }
-            } else {
-                ui.monospace(trimmed);
-            }
-        }
-    }
-
-    fn show_file_dialog(&mut self, ctx: &egui::Context) {
-        let mut should_open = None;
-        let mut should_close = false;
-
-        let mut is_open = self.show_file_dialog;
-        egui::Window::new("Open File")
-            .open(&mut is_open)
-            .default_width(500.0)
-            .show(ctx, |ui| {
-                ui.heading("Open File");
-                ui.separator();
-
-                // Quick access buttons
-                ui.horizontal(|ui| {
-                    if ui.button("🏠 Home").clicked() {
-                        if let Some(home) = dirs::home_dir() {
-                            self.file_path_input = home.display().to_string();
-                        }
-                    }
-                    if ui.button("📁 Documents").clicked() {
-                        if let Some(docs) = dirs::document_dir() {
-                            self.file_path_input = docs.display().to_string();
-                        }
-                    }
-                    if ui.button("💻 Desktop").clicked() {
-                        if let Some(desktop) = dirs::desktop_dir() {
-                            self.file_path_input = desktop.display().to_string();
-                        }
-                    }
-                });
-
-                ui.separator();
-
-                // Current directory
-                ui.label("Current working directory:");
-                if let Ok(cwd) = std::env::current_dir() {
-                    if ui.button(cwd.display().to_string()).clicked() {
-                        self.file_path_input = cwd.display().to_string();
-                    }
-                }
-
-                ui.separator();
-
-                // File path input
-                ui.label("File path:");
-                ui.text_edit_singleline(&mut self.file_path_input);
-
-                ui.label("Examples:");
-                ui.monospace("  ./README.md");
-                ui.monospace("  /home/user/documents/file.txt");
-                ui.monospace("  ~/Documents/file.md");
-
-                ui.separator();
-
-                // Directory browser
-                ui.label("Recent directories:");
-                egui::ScrollArea::vertical()
-                    .max_height(150.0)
-                    .show(ui, |ui| {
-                        // Show some common paths
-                        let paths = vec![
-                            ("Current Directory", std::env::current_dir().ok()),
-                            ("Home", dirs::home_dir()),
-                            ("Documents", dirs::document_dir()),
-                            ("Downloads", dirs::download_dir()),
-                        ];
-
-                        for (name, path_opt) in paths {
-                            if let Some(path) = path_opt {
-                                if ui
-                                    .button(format!("📂 {}: {}", name, path.display()))
-                                    .clicked()
-                                {
-                                    self.file_path_input = path.display().to_string();
-                                }
-                            }
-                        }
-                    });
-
-                ui.separator();
-
-                // Action buttons
-                ui.horizontal(|ui| {
-                    if ui.button("✓ Open").clicked() {
-                        should_open = Some(PathBuf::from(self.file_path_input.clone()));
-                        should_close = true;
-                    }
-                    if ui.button("✗ Cancel").clicked() {
-                        should_close = true;
-                    }
-                });
-            });
-
-        self.show_file_dialog = is_open;
-
-        if let Some(path) = should_open {
-            self.open_file(path);
-            self.file_path_input.clear();
-        }
-        if should_close {
-            self.show_file_dialog = false;
-            self.file_path_input.clear();
-        }
-    }
-
-    fn show_settings(&mut self, ctx: &egui::Context) {
-        let mut is_open = self.show_settings;
-        egui::Window::new("Settings")
-            .open(&mut is_open)
-            .default_width(500.0)
-            .show(ctx, |ui| {
-                ui.heading("AI Settings");
-                ui.separator();
-
-                // AI Enable/Disable toggle
-                ui.horizontal(|ui| {
-                    ui.label("Enable AI Features:");
-                    if ui.checkbox(&mut self.ai_enabled, "").changed() {
-                        if !self.ai_enabled {
-                            self.llm_status = "AI features disabled".to_string();
-                        } else if self.llm_client.is_some() {
-                            self.llm_status = "LLM ready (Gemini 1.5 Flash)".to_string();
-                        } else {
-                            self.llm_status = "Enter API key to enable".to_string();
-                        }
-                    }
-                });
-
-                ui.add_space(10.0);
-
-                // API Key input
-                ui.label("Gemini API Key:");
-                ui.horizontal(|ui| {
-                    let response = ui.add(
-                        egui::TextEdit::singleline(&mut self.api_key_input)
-                            .hint_text("Enter your Gemini API key")
-                            .password(true)
-                            .desired_width(300.0),
-                    );
-
-                    if ui.button("Apply").clicked()
-                        || response.lost_focus() && !self.api_key_input.is_empty()
-                    {
-                        // Try to create client with new API key
-                        match GeminiClient::new(self.api_key_input.clone()) {
-                            Ok(client) => {
-                                self.llm_client = Some(client);
-                                self.llm_status = "LLM ready (Gemini 1.5 Flash)".to_string();
-                                self.ai_enabled = true;
-                            }
-                            Err(e) => {
-                                self.llm_status = format!("Error: {e}");
-                                self.llm_client = None;
-                            }
-                        }
-                    }
-                });
-
-                ui.add_space(10.0);
-
-                // Status
-                ui.label("Status:");
-                ui.monospace(&self.llm_status);
-
-                ui.add_space(10.0);
-
-                // Help text
-                ui.label("How to get API key:");
-                ui.hyperlink_to(
-                    "Get Gemini API Key →",
-                    "https://ai.google.dev/tutorials/setup",
-                );
-
-                ui.add_space(10.0);
-                ui.separator();
-
-                ui.heading("Available AI Features");
-                ui.label("• Improve Markdown - Enhance formatting and structure");
-                ui.label("• Fix Grammar - Correct spelling and grammar errors");
-                ui.label("• Summarize - Create concise summaries");
-            });
-
-        self.show_settings = is_open;
-    }
-
-    fn show_save_as_dialog(&mut self, ctx: &egui::Context) {
-        let mut should_save = None;
-        let mut should_close = false;
-
-        let mut is_open = self.show_save_as_dialog;
-        egui::Window::new("Save As")
-            .open(&mut is_open)
-            .default_width(500.0)
-            .show(ctx, |ui| {
-                ui.heading("Save As");
-                ui.separator();
-
-                // Quick access buttons
-                ui.horizontal(|ui| {
-                    if ui.button("🏠 Home").clicked() {
-                        if let Some(home) = dirs::home_dir() {
-                            self.file_path_input = home.display().to_string() + "/";
-                        }
-                    }
-                    if ui.button("📁 Documents").clicked() {
-                        if let Some(docs) = dirs::document_dir() {
-                            self.file_path_input = docs.display().to_string() + "/";
-                        }
-                    }
-                    if ui.button("💻 Desktop").clicked() {
-                        if let Some(desktop) = dirs::desktop_dir() {
-                            self.file_path_input = desktop.display().to_string() + "/";
-                        }
-                    }
-                });
-
-                ui.separator();
-
-                // File path input
-                ui.label("Save as:");
-                ui.text_edit_singleline(&mut self.file_path_input);
-
-                ui.label("Examples:");
-                ui.monospace("  ./myfile.md");
-                ui.monospace("  /home/user/documents/newfile.txt");
-                ui.monospace("  ~/Documents/document.tex");
-
-                ui.separator();
-
-                // Common locations
-                ui.label("Save to common locations:");
-                egui::ScrollArea::vertical()
-                    .max_height(150.0)
-                    .show(ui, |ui| {
-                        let paths = vec![
-                            ("Current Directory", std::env::current_dir().ok()),
-                            ("Home", dirs::home_dir()),
-                            ("Documents", dirs::document_dir()),
-                            ("Downloads", dirs::download_dir()),
-                            ("Desktop", dirs::desktop_dir()),
-                        ];
-
-                        for (name, path_opt) in paths {
-                            if let Some(path) = path_opt {
-                                if ui.button(format!("📂 {name}")).clicked() {
-                                    self.file_path_input = path.display().to_string() + "/";
-                                }
-                            }
-                        }
-                    });
-
-                ui.separator();
-
-                // Action buttons
-                ui.horizontal(|ui| {
-                    if ui.button("💾 Save").clicked() {
-                        should_save = Some(PathBuf::from(self.file_path_input.clone()));
-                        should_close = true;
-                    }
-                    if ui.button("✗ Cancel").clicked() {
-                        should_close = true;
-                    }
-                });
-            });
-
-        self.show_save_as_dialog = is_open;
-
-        if let Some(path) = should_save {
-            self.save_file_as(path);
-            self.file_path_input.clear();
-        }
-        if should_close {
-            self.show_save_as_dialog = false;
-            self.file_path_input.clear();
-        }
     }
 }
 
@@ -987,7 +393,7 @@ impl eframe::App for LalaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Apply theme
         if self.is_light_theme {
-            ctx.set_visuals(Self::custom_light_theme());
+            ctx.set_visuals(theme::custom_light_theme());
         } else {
             ctx.set_visuals(egui::Visuals::dark());
         }
@@ -1000,7 +406,7 @@ impl eframe::App for LalaApp {
             while let Some(result) = self.grep_engine.poll_result() {
                 self.grep_panel.add_result(result);
             }
-            ctx.request_repaint(); // Keep updating while searching
+            ctx.request_repaint();
         }
 
         // Show main editor
@@ -1030,19 +436,34 @@ impl eframe::App for LalaApp {
             );
         }
 
-        // Show file dialog
+        // Show dialogs
         if self.show_file_dialog {
-            self.show_file_dialog(ctx);
+            if let Some(path) =
+                dialogs::show_file_dialog(ctx, &mut self.show_file_dialog, &mut self.file_path_input)
+            {
+                self.open_file(path);
+            }
         }
 
-        // Show save as dialog
         if self.show_save_as_dialog {
-            self.show_save_as_dialog(ctx);
+            if let Some(path) = dialogs::show_save_as_dialog(
+                ctx,
+                &mut self.show_save_as_dialog,
+                &mut self.file_path_input,
+            ) {
+                self.save_file_as(path);
+            }
         }
 
-        // Show settings
         if self.show_settings {
-            self.show_settings(ctx);
+            dialogs::show_settings(
+                ctx,
+                &mut self.show_settings,
+                &mut self.api_key_input,
+                &mut self.ai_enabled,
+                &mut self.llm_client,
+                &mut self.llm_status,
+            );
         }
     }
 }
