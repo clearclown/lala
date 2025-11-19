@@ -1,7 +1,7 @@
 ; Lala Installer Script
 
 !define PRODUCT_NAME "Lala"
-!define PRODUCT_VERSION "0.1.0"
+!define PRODUCT_VERSION "0.2.0"
 !define PRODUCT_PUBLISHER "clearclown"
 !define PRODUCT_WEB_SITE "https://github.com/clearclown/lala"
 
