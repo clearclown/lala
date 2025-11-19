@@ -58,13 +58,71 @@ pub struct LalaApp {
 }
 
 impl LalaApp {
-    pub fn new(_cc: &eframe::CreationContext) -> Self {
-        // Create initial empty buffer
+    pub fn new(_cc: &eframe::CreationContext, mode: crate::cli::StartupMode) -> Self {
+        // Create initial buffer based on startup mode
         let mut buffers = HashMap::new();
         let buffer_id = BufferId(0);
-        let empty_text = "".to_string();
 
-        let buffer = Buffer::from_string(buffer_id, empty_text.clone(), None);
+        let (initial_text, file_path) = match mode {
+            crate::cli::StartupMode::OpenFile(path) => {
+                // Check file size before opening
+                const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10 MB limit
+                const MAX_LINES: usize = 50000;
+
+                if let Ok(metadata) = std::fs::metadata(&path) {
+                    if metadata.len() > MAX_FILE_SIZE {
+                        eprintln!(
+                            "Error: File is too large ({} MB). Maximum supported size is {} MB.",
+                            metadata.len() / (1024 * 1024),
+                            MAX_FILE_SIZE / (1024 * 1024)
+                        );
+                        eprintln!("Opening empty editor instead.");
+                        (String::new(), None)
+                    } else {
+                        // Continue to load the file
+                        load_file_with_checks(&path, MAX_LINES)
+                    }
+                } else {
+                    // Could not get metadata, try to load anyway
+                    load_file_with_checks(&path, MAX_LINES)
+                }
+            }
+            crate::cli::StartupMode::OpenDir(path) => {
+                // TODO: Implement directory opening with file tree
+                eprintln!("Directory opening not yet fully implemented: {:?}", path);
+                (String::new(), None)
+            }
+            _ => {
+                // Empty editor or other modes handled elsewhere
+                (String::new(), None)
+            }
+        };
+
+        // Helper function to load file with line count check
+        fn load_file_with_checks(path: &PathBuf, max_lines: usize) -> (String, Option<PathBuf>) {
+            match std::fs::read_to_string(path) {
+                Ok(content) => {
+                    let line_count = content.lines().count();
+                    if line_count > max_lines {
+                        eprintln!(
+                            "Error: File has too many lines ({} lines). Maximum supported is {} lines.",
+                            line_count, max_lines
+                        );
+                        eprintln!("Opening empty editor instead.");
+                        (String::new(), None)
+                    } else {
+                        eprintln!("File loaded successfully ({} lines)", line_count);
+                        (content, Some(path.clone()))
+                    }
+                }
+                Err(err) => {
+                    eprintln!("Warning: Could not read file {:?}: {}", path, err);
+                    (String::new(), None)
+                }
+            }
+        }
+
+        let buffer = Buffer::from_string(buffer_id, initial_text.clone(), file_path);
         buffers.insert(buffer_id, buffer);
 
         // Try to initialize LLM client from environment
@@ -86,7 +144,7 @@ impl LalaApp {
             active_buffer_id: Some(buffer_id),
             next_buffer_id: 1,
             file_tree: FileTree::default(),
-            current_text: empty_text,
+            current_text: initial_text,
             text_changed: false,
             search_panel: SearchPanel::new(),
             grep_panel: GrepPanel::new(),
@@ -225,7 +283,40 @@ impl LalaApp {
     }
 
     fn open_file(&mut self, path: PathBuf) {
+        // Check file size before opening
+        if let Ok(metadata) = std::fs::metadata(&path) {
+            const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10 MB limit
+            if metadata.len() > MAX_FILE_SIZE {
+                eprintln!(
+                    "Warning: File is too large ({} MB). Maximum supported size is {} MB.",
+                    metadata.len() / (1024 * 1024),
+                    MAX_FILE_SIZE / (1024 * 1024)
+                );
+                self.llm_status = format!(
+                    "Error: File too large ({} MB). Max: {} MB",
+                    metadata.len() / (1024 * 1024),
+                    MAX_FILE_SIZE / (1024 * 1024)
+                );
+                return;
+            }
+        }
+
         if let Ok(content) = std::fs::read_to_string(&path) {
+            // Additional check for line count
+            let line_count = content.lines().count();
+            const MAX_LINES: usize = 50000;
+            if line_count > MAX_LINES {
+                eprintln!(
+                    "Warning: File has too many lines ({} lines). Maximum supported is {} lines.",
+                    line_count, MAX_LINES
+                );
+                self.llm_status = format!(
+                    "Error: Too many lines ({} lines). Max: {} lines",
+                    line_count, MAX_LINES
+                );
+                return;
+            }
+
             let buffer_id = BufferId(self.next_buffer_id);
             self.next_buffer_id += 1;
 
@@ -234,6 +325,10 @@ impl LalaApp {
             self.active_buffer_id = Some(buffer_id);
             self.current_text = content;
             self.text_changed = false;
+            self.llm_status = format!("File loaded ({} lines)", line_count);
+        } else {
+            eprintln!("Failed to read file: {:?}", path);
+            self.llm_status = format!("Error: Failed to read file");
         }
     }
 

@@ -184,13 +184,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ..Default::default()
     };
 
+    // Capture mode for the closure
+    let startup_mode = mode.clone();
+
     eframe::run_native(
         "lala",
         options,
-        Box::new(|cc| {
+        Box::new(move |cc| {
             // Setup fonts to support CJK (Chinese, Japanese, Korean) characters
             setup_custom_fonts(&cc.egui_ctx);
-            Ok(Box::new(LalaApp::new(cc)))
+            Ok(Box::new(LalaApp::new(cc, startup_mode)))
         }),
     )?;
 
