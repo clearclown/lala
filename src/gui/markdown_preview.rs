@@ -328,11 +328,7 @@ fn render_highlighted_code(ui: &mut egui::Ui, code: &str, lang: &str) {
 
 /// Convert syntect Style to egui Color32
 fn style_to_color(style: Style) -> egui::Color32 {
-    egui::Color32::from_rgb(
-        style.foreground.r,
-        style.foreground.g,
-        style.foreground.b,
-    )
+    egui::Color32::from_rgb(style.foreground.r, style.foreground.g, style.foreground.b)
 }
 
 // ========== ユニットテスト ==========

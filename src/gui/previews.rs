@@ -114,10 +114,7 @@ pub fn render_mermaid_preview(ui: &mut egui::Ui, text: &str) {
 
     for line in lines {
         let trimmed = line.trim();
-        if trimmed.is_empty()
-            || trimmed.starts_with("graph")
-            || trimmed.starts_with("flowchart")
-        {
+        if trimmed.is_empty() || trimmed.starts_with("graph") || trimmed.starts_with("flowchart") {
             continue;
         }
 

@@ -176,8 +176,7 @@ impl LalaApp {
 
     fn handle_keyboard_shortcuts(&mut self, ctx: &egui::Context) {
         // Ctrl+S: Save file
-        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::S))
-        {
+        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::S)) {
             self.save_file();
         }
 
@@ -197,8 +196,7 @@ impl LalaApp {
         }
 
         // Ctrl+F: Open search panel
-        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::F))
-        {
+        if ctx.input(|i| i.modifiers.command && !i.modifiers.shift && i.key_pressed(egui::Key::F)) {
             self.show_search_panel = true;
         }
 
@@ -533,9 +531,11 @@ impl eframe::App for LalaApp {
 
         // Show dialogs
         if self.show_file_dialog {
-            if let Some(path) =
-                dialogs::show_file_dialog(ctx, &mut self.show_file_dialog, &mut self.file_path_input)
-            {
+            if let Some(path) = dialogs::show_file_dialog(
+                ctx,
+                &mut self.show_file_dialog,
+                &mut self.file_path_input,
+            ) {
                 self.open_file(path);
             }
         }
