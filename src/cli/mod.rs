@@ -48,7 +48,7 @@ pub enum StartupMode {
 #[derive(Parser, Debug)]
 #[command(name = "lala")]
 #[command(author = "lala team")]
-#[command(version = "0.2.0")]
+#[command(version = "0.3.0")]
 #[command(about = "軽量で高速なテキストエディタ", long_about = None)]
 #[command(disable_version_flag = true)]
 struct Args {

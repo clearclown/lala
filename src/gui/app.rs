@@ -55,37 +55,29 @@ pub struct LalaApp {
     show_settings: bool,
     api_key_input: String,
     ai_enabled: bool,
+
+    // Large file handling
+    is_large_file: bool,
 }
 
 impl LalaApp {
     pub fn new(_cc: &eframe::CreationContext, mode: crate::cli::StartupMode) -> Self {
+        // Constants for large file detection
+        // Files larger than these thresholds use read-only mode
+        const LARGE_FILE_THRESHOLD: u64 = 5 * 1024 * 1024; // 5 MB
+        const LARGE_FILE_LINES: usize = 5000; // 5,000 lines
+
         // Create initial buffer based on startup mode
         let mut buffers = HashMap::new();
         let buffer_id = BufferId(0);
+        let mut is_large_file = false;
 
         let (initial_text, file_path) = match mode {
             crate::cli::StartupMode::OpenFile(path) => {
-                // Check file size before opening
-                const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10 MB limit
-                const MAX_LINES: usize = 50000;
-
-                if let Ok(metadata) = std::fs::metadata(&path) {
-                    if metadata.len() > MAX_FILE_SIZE {
-                        eprintln!(
-                            "Error: File is too large ({} MB). Maximum supported size is {} MB.",
-                            metadata.len() / (1024 * 1024),
-                            MAX_FILE_SIZE / (1024 * 1024)
-                        );
-                        eprintln!("Opening empty editor instead.");
-                        (String::new(), None)
-                    } else {
-                        // Continue to load the file
-                        load_file_with_checks(&path, MAX_LINES)
-                    }
-                } else {
-                    // Could not get metadata, try to load anyway
-                    load_file_with_checks(&path, MAX_LINES)
-                }
+                // Load file and detect if it's large
+                let (content, path_opt, is_large) = load_file_and_detect(&path, LARGE_FILE_THRESHOLD, LARGE_FILE_LINES);
+                is_large_file = is_large;
+                (content, path_opt)
             }
             crate::cli::StartupMode::OpenDir(path) => {
                 // TODO: Implement directory opening with file tree
@@ -98,26 +90,29 @@ impl LalaApp {
             }
         };
 
-        // Helper function to load file with line count check
-        fn load_file_with_checks(path: &PathBuf, max_lines: usize) -> (String, Option<PathBuf>) {
+        // Helper function to load file and detect if it's large
+        fn load_file_and_detect(path: &PathBuf, size_threshold: u64, line_threshold: usize) -> (String, Option<PathBuf>, bool) {
             match std::fs::read_to_string(path) {
                 Ok(content) => {
+                    let file_size = content.len() as u64;
                     let line_count = content.lines().count();
-                    if line_count > max_lines {
+                    let is_large = file_size > size_threshold || line_count > line_threshold;
+
+                    if is_large {
                         eprintln!(
-                            "Error: File has too many lines ({} lines). Maximum supported is {} lines.",
-                            line_count, max_lines
+                            "Large file detected: {} KB, {} lines (read-only mode)",
+                            file_size / 1024,
+                            line_count
                         );
-                        eprintln!("Opening empty editor instead.");
-                        (String::new(), None)
                     } else {
-                        eprintln!("File loaded successfully ({} lines)", line_count);
-                        (content, Some(path.clone()))
+                        eprintln!("File loaded: {} KB, {} lines", file_size / 1024, line_count);
                     }
+
+                    (content, Some(path.clone()), is_large)
                 }
                 Err(err) => {
-                    eprintln!("Warning: Could not read file {:?}: {}", path, err);
-                    (String::new(), None)
+                    eprintln!("Error: Could not read file {:?}: {}", path, err);
+                    (String::new(), None, false)
                 }
             }
         }
@@ -162,6 +157,7 @@ impl LalaApp {
             show_settings: false,
             api_key_input: String::new(),
             ai_enabled,
+            is_large_file,
         }
     }
 
@@ -281,38 +277,32 @@ impl LalaApp {
     }
 
     fn open_file(&mut self, path: PathBuf) {
-        // Check file size before opening
-        if let Ok(metadata) = std::fs::metadata(&path) {
-            const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10 MB limit
-            if metadata.len() > MAX_FILE_SIZE {
-                eprintln!(
-                    "Warning: File is too large ({} MB). Maximum supported size is {} MB.",
-                    metadata.len() / (1024 * 1024),
-                    MAX_FILE_SIZE / (1024 * 1024)
-                );
-                self.llm_status = format!(
-                    "Error: File too large ({} MB). Max: {} MB",
-                    metadata.len() / (1024 * 1024),
-                    MAX_FILE_SIZE / (1024 * 1024)
-                );
-                return;
-            }
-        }
+        // Constants for large file detection
+        // Files larger than these thresholds use read-only mode
+        const LARGE_FILE_THRESHOLD: u64 = 5 * 1024 * 1024; // 5 MB
+        const LARGE_FILE_LINES: usize = 5000; // 5,000 lines
 
         if let Ok(content) = std::fs::read_to_string(&path) {
-            // Additional check for line count
+            let file_size = content.len() as u64;
             let line_count = content.lines().count();
-            const MAX_LINES: usize = 50000;
-            if line_count > MAX_LINES {
+            let is_large = file_size > LARGE_FILE_THRESHOLD || line_count > LARGE_FILE_LINES;
+
+            if is_large {
                 eprintln!(
-                    "Warning: File has too many lines ({} lines). Maximum supported is {} lines.",
-                    line_count, MAX_LINES
+                    "Large file detected: {} KB, {} lines (read-only mode)",
+                    file_size / 1024,
+                    line_count
                 );
                 self.llm_status = format!(
-                    "Error: Too many lines ({} lines). Max: {} lines",
-                    line_count, MAX_LINES
+                    "Large file: {} KB, {} lines (read-only)",
+                    file_size / 1024,
+                    line_count
                 );
-                return;
+                self.is_large_file = true;
+            } else {
+                eprintln!("File loaded: {} KB, {} lines", file_size / 1024, line_count);
+                self.llm_status = format!("File loaded ({} lines)", line_count);
+                self.is_large_file = false;
             }
 
             let buffer_id = BufferId(self.next_buffer_id);
@@ -323,7 +313,6 @@ impl LalaApp {
             self.active_buffer_id = Some(buffer_id);
             self.current_text = content;
             self.text_changed = false;
-            self.llm_status = format!("File loaded ({} lines)", line_count);
         } else {
             eprintln!("Failed to read file: {:?}", path);
             self.llm_status = format!("Error: Failed to read file");
@@ -456,28 +445,54 @@ impl LalaApp {
             .show(ctx, |ui| {
                 let available_height = ui.available_height();
 
-                egui::ScrollArea::vertical()
-                    .auto_shrink([false; 2])
-                    .show(ui, |ui| {
-                        let response = ui.add(
-                            egui::TextEdit::multiline(&mut self.current_text)
-                                .font(egui::TextStyle::Monospace)
-                                .desired_width(f32::INFINITY)
-                                .min_size(egui::vec2(f32::INFINITY, available_height))
-                                .frame(false)
-                                .background_color(bg_color)
-                                .text_color(text_color),
-                        );
-
-                        // Request focus on first frame
-                        if self.current_text.is_empty() && !self.text_changed {
-                            response.request_focus();
-                        }
-
-                        if response.changed() {
-                            self.text_changed = true;
-                        }
+                if self.is_large_file {
+                    // Large file: read-only view with ScrollArea + Label
+                    ui.vertical(|ui| {
+                        ui.horizontal(|ui| {
+                            ui.colored_label(
+                                egui::Color32::YELLOW,
+                                "⚠ Large file (read-only mode)"
+                            );
+                            ui.label(format!(
+                                "| {} lines | {} KB",
+                                self.current_text.lines().count(),
+                                self.current_text.len() / 1024
+                            ));
+                        });
+                        ui.separator();
                     });
+
+                    egui::ScrollArea::vertical()
+                        .auto_shrink([false; 2])
+                        .show(ui, |ui| {
+                            ui.label(
+                                egui::RichText::new(&self.current_text)
+                                    .font(egui::FontId::monospace(14.0))
+                                    .color(text_color)
+                            );
+                        });
+                } else {
+                    // Normal file: editable TextEdit
+                    egui::ScrollArea::vertical()
+                        .auto_shrink([false; 2])
+                        .show(ui, |ui| {
+                            let response = ui.add_sized(
+                                [ui.available_width(), available_height],
+                                egui::TextEdit::multiline(&mut self.current_text)
+                                    .font(egui::TextStyle::Monospace)
+                                    .frame(false),
+                            );
+
+                            // Request focus on first frame
+                            if self.current_text.is_empty() && !self.text_changed {
+                                response.request_focus();
+                            }
+
+                            if response.changed() {
+                                self.text_changed = true;
+                            }
+                        });
+                }
             });
     }
 }
