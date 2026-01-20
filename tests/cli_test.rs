@@ -134,19 +134,13 @@ mod file_path_tests {
     #[test]
     fn test_relative_path_with_directory() {
         let mode = parse_args(vec!["lala", "./src/main.rs"]);
-        assert_eq!(
-            mode,
-            StartupMode::OpenFile(PathBuf::from("./src/main.rs"))
-        );
+        assert_eq!(mode, StartupMode::OpenFile(PathBuf::from("./src/main.rs")));
     }
 
     #[test]
     fn test_path_with_multiple_dots() {
         let mode = parse_args(vec!["lala", "file.test.txt"]);
-        assert_eq!(
-            mode,
-            StartupMode::OpenFile(PathBuf::from("file.test.txt"))
-        );
+        assert_eq!(mode, StartupMode::OpenFile(PathBuf::from("file.test.txt")));
     }
 
     #[test]
@@ -173,10 +167,7 @@ mod file_path_tests {
     #[test]
     fn test_long_extension() {
         let mode = parse_args(vec!["lala", "archive.tar.gz"]);
-        assert_eq!(
-            mode,
-            StartupMode::OpenFile(PathBuf::from("archive.tar.gz"))
-        );
+        assert_eq!(mode, StartupMode::OpenFile(PathBuf::from("archive.tar.gz")));
     }
 
     #[test]
@@ -443,10 +434,7 @@ mod edge_case_tests {
     #[test]
     fn test_unicode_directory() {
         let mode = parse_args(vec!["lala", "日本語フォルダ"]);
-        assert_eq!(
-            mode,
-            StartupMode::OpenDir(PathBuf::from("日本語フォルダ"))
-        );
+        assert_eq!(mode, StartupMode::OpenDir(PathBuf::from("日本語フォルダ")));
     }
 
     #[test]
@@ -481,7 +469,9 @@ mod html_view_tests {
 
     #[test]
     fn test_render_html_with_table() {
-        html_view::render_html_to_terminal("<table><tr><td>Cell 1</td><td>Cell 2</td></tr></table>");
+        html_view::render_html_to_terminal(
+            "<table><tr><td>Cell 1</td><td>Cell 2</td></tr></table>",
+        );
     }
 
     #[test]
@@ -590,7 +580,9 @@ mod latex_view_tests {
 
     #[test]
     fn test_render_simple_latex() {
-        latex_view::render_latex_to_terminal("\\documentclass{article}\n\\begin{document}\nHello\n\\end{document}");
+        latex_view::render_latex_to_terminal(
+            "\\documentclass{article}\n\\begin{document}\nHello\n\\end{document}",
+        );
     }
 
     #[test]
@@ -600,7 +592,9 @@ mod latex_view_tests {
 
     #[test]
     fn test_render_latex_with_sections() {
-        latex_view::render_latex_to_terminal("\\section{Introduction}\nContent here.\n\\subsection{Details}");
+        latex_view::render_latex_to_terminal(
+            "\\section{Introduction}\nContent here.\n\\subsection{Details}",
+        );
     }
 
     #[test]
@@ -610,7 +604,9 @@ mod latex_view_tests {
 
     #[test]
     fn test_render_latex_with_packages() {
-        latex_view::render_latex_to_terminal("\\documentclass{article}\n\\usepackage{amsmath}\n\\usepackage{graphicx}");
+        latex_view::render_latex_to_terminal(
+            "\\documentclass{article}\n\\usepackage{amsmath}\n\\usepackage{graphicx}",
+        );
     }
 }
 

@@ -68,7 +68,6 @@ pub fn custom_light_theme() -> egui::Visuals {
     visuals
 }
 
-
 /// Creates a custom dark theme optimized for Markdown composition
 /// with comfortable contrast and modern aesthetics
 pub fn custom_dark_theme() -> egui::Visuals {

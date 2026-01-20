@@ -303,11 +303,7 @@ fn test_line_access_empty_buffer() {
 
 #[test]
 fn test_position_to_char_idx_multiline() {
-    let buffer = Buffer::from_string(
-        BufferId(0),
-        "Line 1\nLine 2\nLine 3\n".to_string(),
-        None,
-    );
+    let buffer = Buffer::from_string(BufferId(0), "Line 1\nLine 2\nLine 3\n".to_string(), None);
 
     // First character
     assert_eq!(buffer.position_to_char_idx(Position::new(0, 0)).unwrap(), 0);
@@ -316,18 +312,20 @@ fn test_position_to_char_idx_multiline() {
     // Start of second line
     assert_eq!(buffer.position_to_char_idx(Position::new(1, 0)).unwrap(), 7);
     // Middle of second line
-    assert_eq!(buffer.position_to_char_idx(Position::new(1, 3)).unwrap(), 10);
+    assert_eq!(
+        buffer.position_to_char_idx(Position::new(1, 3)).unwrap(),
+        10
+    );
     // Start of third line
-    assert_eq!(buffer.position_to_char_idx(Position::new(2, 0)).unwrap(), 14);
+    assert_eq!(
+        buffer.position_to_char_idx(Position::new(2, 0)).unwrap(),
+        14
+    );
 }
 
 #[test]
 fn test_char_idx_to_position_multiline() {
-    let buffer = Buffer::from_string(
-        BufferId(0),
-        "Line 1\nLine 2\nLine 3\n".to_string(),
-        None,
-    );
+    let buffer = Buffer::from_string(BufferId(0), "Line 1\nLine 2\nLine 3\n".to_string(), None);
 
     // First character
     assert_eq!(buffer.char_idx_to_position(0).unwrap(), Position::new(0, 0));
@@ -336,7 +334,10 @@ fn test_char_idx_to_position_multiline() {
     // First character of second line
     assert_eq!(buffer.char_idx_to_position(7).unwrap(), Position::new(1, 0));
     // Middle of second line
-    assert_eq!(buffer.char_idx_to_position(10).unwrap(), Position::new(1, 3));
+    assert_eq!(
+        buffer.char_idx_to_position(10).unwrap(),
+        Position::new(1, 3)
+    );
 }
 
 #[test]
@@ -458,7 +459,10 @@ fn test_replace_at_end() {
     let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
 
     buffer
-        .replace_range(Range::new(Position::new(0, 6), Position::new(0, 11)), "Universe")
+        .replace_range(
+            Range::new(Position::new(0, 6), Position::new(0, 11)),
+            "Universe",
+        )
         .unwrap();
 
     assert_eq!(buffer.content(), "Hello Universe");
@@ -469,7 +473,10 @@ fn test_replace_entire_content() {
     let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
 
     buffer
-        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 11)), "New Content")
+        .replace_range(
+            Range::new(Position::new(0, 0), Position::new(0, 11)),
+            "New Content",
+        )
         .unwrap();
 
     assert_eq!(buffer.content(), "New Content");
@@ -490,11 +497,7 @@ fn test_replace_empty_range() {
 
 #[test]
 fn test_replace_multiline() {
-    let mut buffer = Buffer::from_string(
-        BufferId(0),
-        "Line 1\nLine 2\nLine 3".to_string(),
-        None,
-    );
+    let mut buffer = Buffer::from_string(BufferId(0), "Line 1\nLine 2\nLine 3".to_string(), None);
 
     // Replace from middle of line 1 to middle of line 2
     buffer
@@ -518,12 +521,12 @@ fn test_buffer_id_equality() {
 #[test]
 fn test_buffer_id_hash() {
     use std::collections::HashSet;
-    
+
     let mut set = HashSet::new();
     set.insert(BufferId(0));
     set.insert(BufferId(1));
     set.insert(BufferId(0)); // Duplicate
-    
+
     assert_eq!(set.len(), 2);
 }
 
@@ -533,10 +536,7 @@ fn test_buffer_id_hash() {
 fn test_invalid_range_start_greater_than_end() {
     let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
 
-    let result = buffer.replace_range(
-        Range::new(Position::new(0, 10), Position::new(0, 5)),
-        "X",
-    );
+    let result = buffer.replace_range(Range::new(Position::new(0, 10), Position::new(0, 5)), "X");
 
     assert!(result.is_err());
 }

@@ -172,7 +172,8 @@ impl GeminiClient {
             .map_err(|e| format!("Failed to parse response: {e}"))?;
 
         gemini_response
-            .candidates.first()
+            .candidates
+            .first()
             .and_then(|c| c.content.parts.first())
             .map(|p| p.text.clone())
             .ok_or_else(|| "No response from Gemini".to_string())

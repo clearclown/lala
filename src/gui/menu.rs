@@ -121,9 +121,9 @@ pub fn render_menu_bar(
                 .clicked()
             {
                 if let Some(client) = llm_client {
-                    match client
-                        .improve_markdown(&format!("Summarize this text concisely:\n\n{current_text}"))
-                    {
+                    match client.improve_markdown(&format!(
+                        "Summarize this text concisely:\n\n{current_text}"
+                    )) {
                         Ok(summary) => {
                             *current_text = summary;
                             *text_changed = true;

@@ -249,7 +249,8 @@ pub fn show_settings(
                         .desired_width(300.0),
                 );
 
-                if ui.button("Apply").clicked() || response.lost_focus() && !api_key_input.is_empty()
+                if ui.button("Apply").clicked()
+                    || response.lost_focus() && !api_key_input.is_empty()
                 {
                     // Try to create client with new API key
                     match GeminiClient::new(api_key_input.clone()) {

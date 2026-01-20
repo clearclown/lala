@@ -76,9 +76,7 @@ fn setup_custom_fonts(ctx: &egui::Context) {
         std::fs::read("/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf")
             .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansArabic-Regular.ttf"))
             .or_else(|_| std::fs::read("/usr/share/fonts/noto/NotoSansArabic-Regular.ttf"))
-            .or_else(|_| {
-                std::fs::read("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
-            })
+            .or_else(|_| std::fs::read("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"))
             // Windows paths
             .or_else(|_| std::fs::read("C:\\Windows\\Fonts\\arial.ttf"))
             // macOS paths

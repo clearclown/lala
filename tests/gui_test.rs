@@ -5,7 +5,7 @@
 /// - RTL text detection and handling
 /// - Editor panel state management
 /// - Preview mode detection
-use lala::gui::{TextDirection, RtlText};
+use lala::gui::{RtlText, TextDirection};
 
 // === RTL Text Detection Tests ===
 
@@ -16,7 +16,7 @@ mod rtl_tests {
     fn test_arabic_text_detection() {
         let arabic = "مرحبا بالعالم";
         let rtl_text = RtlText::new(arabic);
-        
+
         assert!(rtl_text.is_rtl());
         assert!(!rtl_text.is_mixed());
         assert_eq!(rtl_text.direction, TextDirection::RightToLeft);
@@ -26,7 +26,7 @@ mod rtl_tests {
     fn test_hebrew_text_detection() {
         let hebrew = "שלום עולם";
         let rtl_text = RtlText::new(hebrew);
-        
+
         assert!(rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::RightToLeft);
     }
@@ -35,7 +35,7 @@ mod rtl_tests {
     fn test_english_text_detection() {
         let english = "Hello World";
         let rtl_text = RtlText::new(english);
-        
+
         assert!(!rtl_text.is_rtl());
         assert!(!rtl_text.is_mixed());
         assert_eq!(rtl_text.direction, TextDirection::LeftToRight);
@@ -45,7 +45,7 @@ mod rtl_tests {
     fn test_mixed_text_detection() {
         let mixed = "Hello مرحبا World";
         let rtl_text = RtlText::new(mixed);
-        
+
         assert!(!rtl_text.is_rtl());
         assert!(rtl_text.is_mixed());
         assert_eq!(rtl_text.direction, TextDirection::Mixed);
@@ -55,7 +55,7 @@ mod rtl_tests {
     fn test_empty_text_detection() {
         let empty = "";
         let rtl_text = RtlText::new(empty);
-        
+
         assert!(!rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::LeftToRight);
     }
@@ -64,7 +64,7 @@ mod rtl_tests {
     fn test_numbers_only_text() {
         let numbers = "123 456 789";
         let rtl_text = RtlText::new(numbers);
-        
+
         // Numbers alone should default to LTR
         assert!(!rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::LeftToRight);
@@ -74,7 +74,7 @@ mod rtl_tests {
     fn test_japanese_text_is_not_rtl() {
         let japanese = "こんにちは世界";
         let rtl_text = RtlText::new(japanese);
-        
+
         // Japanese is LTR
         assert!(!rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::LeftToRight);
@@ -84,7 +84,7 @@ mod rtl_tests {
     fn test_chinese_text_is_not_rtl() {
         let chinese = "你好世界";
         let rtl_text = RtlText::new(chinese);
-        
+
         // Chinese is LTR
         assert!(!rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::LeftToRight);
@@ -95,7 +95,7 @@ mod rtl_tests {
         // Persian uses Arabic script
         let persian = "سلام دنیا";
         let rtl_text = RtlText::new(persian);
-        
+
         assert!(rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::RightToLeft);
     }
@@ -105,7 +105,7 @@ mod rtl_tests {
         // Urdu uses Arabic script
         let urdu = "ہیلو دنیا";
         let rtl_text = RtlText::new(urdu);
-        
+
         assert!(rtl_text.is_rtl());
         assert_eq!(rtl_text.direction, TextDirection::RightToLeft);
     }
@@ -114,7 +114,7 @@ mod rtl_tests {
     fn test_arabic_with_numbers() {
         let arabic_num = "١٢٣ مرحبا";
         let rtl_text = RtlText::new(arabic_num);
-        
+
         assert!(rtl_text.is_rtl());
     }
 }
@@ -122,7 +122,7 @@ mod rtl_tests {
 // === RTL Character Detection Tests ===
 
 mod rtl_char_tests {
-    use lala::gui::rtl::{is_rtl_char, contains_rtl};
+    use lala::gui::rtl::{contains_rtl, is_rtl_char};
 
     #[test]
     fn test_arabic_alef() {
@@ -173,12 +173,14 @@ mod rtl_char_tests {
 // === Theme Tests ===
 
 mod theme_tests {
-    use lala::gui::{custom_light_theme, custom_dark_theme, ThemeMode, EditorColors, MarkdownPreviewColors};
+    use lala::gui::{
+        custom_dark_theme, custom_light_theme, EditorColors, MarkdownPreviewColors, ThemeMode,
+    };
 
     #[test]
     fn test_light_theme_creation() {
         let theme = custom_light_theme();
-        
+
         // Light theme should have light backgrounds
         assert!(theme.window_fill.r() > 200);
         assert!(theme.window_fill.g() > 200);
@@ -188,7 +190,7 @@ mod theme_tests {
     #[test]
     fn test_dark_theme_creation() {
         let theme = custom_dark_theme();
-        
+
         // Dark theme should have dark backgrounds
         assert!(theme.window_fill.r() < 50);
         assert!(theme.window_fill.g() < 50);
@@ -198,7 +200,7 @@ mod theme_tests {
     #[test]
     fn test_theme_mode_default() {
         let default = ThemeMode::default();
-        
+
         // Default should be dark for code editing
         assert_eq!(default, ThemeMode::Dark);
     }
@@ -206,7 +208,7 @@ mod theme_tests {
     #[test]
     fn test_editor_colors_light() {
         let colors = EditorColors::light();
-        
+
         // Light colors should have light background
         assert!(colors.background.r() > 200);
         // And dark foreground
@@ -216,7 +218,7 @@ mod theme_tests {
     #[test]
     fn test_editor_colors_dark() {
         let colors = EditorColors::dark();
-        
+
         // Dark colors should have dark background
         assert!(colors.background.r() < 50);
         // And light foreground
@@ -226,7 +228,7 @@ mod theme_tests {
     #[test]
     fn test_markdown_preview_colors_light() {
         let colors = MarkdownPreviewColors::light();
-        
+
         // Light colors should have light background
         assert!(colors.background.r() > 200);
         // Heading should be dark
@@ -236,7 +238,7 @@ mod theme_tests {
     #[test]
     fn test_markdown_preview_colors_dark() {
         let colors = MarkdownPreviewColors::dark();
-        
+
         // Dark colors should have dark background
         assert!(colors.background.r() < 50);
         // Heading should be light
@@ -246,7 +248,7 @@ mod theme_tests {
     #[test]
     fn test_light_theme_has_proper_shadow() {
         let theme = custom_light_theme();
-        
+
         // Should have shadow for modern look (egui 0.33 API)
         assert!(theme.window_shadow.blur > 0);
     }
@@ -254,7 +256,7 @@ mod theme_tests {
     #[test]
     fn test_dark_theme_has_proper_shadow() {
         let theme = custom_dark_theme();
-        
+
         // Should have shadow for modern look (egui 0.33 API)
         assert!(theme.window_shadow.blur > 0);
     }
@@ -343,8 +345,10 @@ mod markdown_preview_tests {
         let markdown = "> This is a quote";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::BlockQuote(_)))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::BlockQuote(_)))));
     }
 
     #[test]
@@ -352,9 +356,10 @@ mod markdown_preview_tests {
         let markdown = "> Level 1\n>> Level 2";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         // Should contain blockquotes
-        let blockquote_count = events.iter()
+        let blockquote_count = events
+            .iter()
             .filter(|e| matches!(e, Event::Start(Tag::BlockQuote(_))))
             .count();
         assert!(blockquote_count >= 1);
@@ -365,7 +370,7 @@ mod markdown_preview_tests {
         let markdown = "- [ ] Task 1\n- [x] Task 2";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         // Should contain task list markers
         let has_task_marker = events.iter().any(|e| matches!(e, Event::TaskListMarker(_)));
         assert!(has_task_marker);
@@ -376,8 +381,10 @@ mod markdown_preview_tests {
         let markdown = "![Alt text](image.png)";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Image { .. }))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Image { .. }))));
     }
 
     #[test]
@@ -385,8 +392,10 @@ mod markdown_preview_tests {
         let markdown = "~~strikethrough~~";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Strikethrough))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Strikethrough))));
     }
 
     #[test]
@@ -394,8 +403,10 @@ mod markdown_preview_tests {
         let markdown = "| A | B |\n|---|---|\n| 1 | 2 |";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Table(_)))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Table(_)))));
     }
 
     #[test]
@@ -403,16 +414,18 @@ mod markdown_preview_tests {
         let markdown = "Text[^1]\n\n[^1]: Footnote content";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::FootnoteDefinition(_)))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::FootnoteDefinition(_)))));
     }
 
     #[test]
     fn test_hard_break() {
-        let markdown = "Line 1  \nLine 2";  // Two spaces before newline
+        let markdown = "Line 1  \nLine 2"; // Two spaces before newline
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         assert!(events.iter().any(|e| matches!(e, Event::HardBreak)));
     }
 
@@ -421,7 +434,7 @@ mod markdown_preview_tests {
         let markdown = "Line 1\nLine 2";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         assert!(events.iter().any(|e| matches!(e, Event::SoftBreak)));
     }
 
@@ -430,16 +443,16 @@ mod markdown_preview_tests {
         let markdown = "---";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         assert!(events.iter().any(|e| matches!(e, Event::Rule)));
     }
 
     #[test]
     fn test_rtl_in_markdown() {
         use lala::gui::rtl::contains_rtl;
-        
+
         let markdown = "# مرحبا بالعالم\n\nهذا نص عربي";
-        
+
         assert!(contains_rtl(markdown));
     }
 }
@@ -469,7 +482,7 @@ mod unicode_tests {
     #[test]
     fn test_bidirectional_text() {
         let mixed = "Hello مرحبا World";
-        
+
         // Contains both LTR and RTL
         assert!(mixed.contains("Hello"));
         assert!(mixed.contains("مرحبا"));
@@ -485,7 +498,7 @@ mod unicode_tests {
 // === Comprehensive RTL Module Tests ===
 
 mod rtl_comprehensive_tests {
-    use lala::gui::rtl::{is_rtl_char, contains_rtl, detect_text_direction, TextDirection};
+    use lala::gui::rtl::{contains_rtl, detect_text_direction, is_rtl_char, TextDirection};
     use lala::gui::RtlText;
 
     // === Arabic Script Variants ===
@@ -513,7 +526,11 @@ mod rtl_comprehensive_tests {
         // Arabic presentation forms (FB50-FDFF, FE70-FEFF)
         let forms = "ﺍﺏﺕﺙ"; // Isolated forms
         for c in forms.chars() {
-            assert!(is_rtl_char(c), "Expected presentation form '{}' to be RTL", c);
+            assert!(
+                is_rtl_char(c),
+                "Expected presentation form '{}' to be RTL",
+                c
+            );
         }
     }
 
@@ -561,7 +578,10 @@ mod rtl_comprehensive_tests {
         let text = "مرحبا بالعالم Hello كيف حالك";
         let direction = detect_text_direction(text);
         // RTL dominates
-        assert!(matches!(direction, TextDirection::RightToLeft | TextDirection::Mixed));
+        assert!(matches!(
+            direction,
+            TextDirection::RightToLeft | TextDirection::Mixed
+        ));
     }
 
     #[test]
@@ -570,7 +590,10 @@ mod rtl_comprehensive_tests {
         let text = "Hello World مرحبا How Are You";
         let direction = detect_text_direction(text);
         // Mixed because both present
-        assert!(matches!(direction, TextDirection::LeftToRight | TextDirection::Mixed));
+        assert!(matches!(
+            direction,
+            TextDirection::LeftToRight | TextDirection::Mixed
+        ));
     }
 
     #[test]
@@ -662,7 +685,7 @@ mod rtl_comprehensive_tests {
 // === Additional Theme Tests ===
 
 mod theme_comprehensive_tests {
-    use lala::gui::{custom_light_theme, custom_dark_theme, EditorColors, MarkdownPreviewColors};
+    use lala::gui::{custom_dark_theme, custom_light_theme, EditorColors, MarkdownPreviewColors};
 
     #[test]
     fn test_light_theme_panel_fill() {
@@ -707,7 +730,7 @@ mod theme_comprehensive_tests {
     fn test_editor_colors_selection_visible() {
         let light = EditorColors::light();
         let dark = EditorColors::dark();
-        
+
         // Selection should be different from background
         assert_ne!(light.selection, light.background);
         assert_ne!(dark.selection, dark.background);
@@ -717,18 +740,18 @@ mod theme_comprehensive_tests {
     fn test_editor_colors_cursor_visible_on_light() {
         let light = EditorColors::light();
         // Cursor should be visible against light background
-        let contrast = (light.background.r() as i32 - light.cursor.r() as i32).abs() +
-                       (light.background.g() as i32 - light.cursor.g() as i32).abs() +
-                       (light.background.b() as i32 - light.cursor.b() as i32).abs();
+        let contrast = (light.background.r() as i32 - light.cursor.r() as i32).abs()
+            + (light.background.g() as i32 - light.cursor.g() as i32).abs()
+            + (light.background.b() as i32 - light.cursor.b() as i32).abs();
         assert!(contrast > 200, "Cursor should have sufficient contrast");
     }
 
     #[test]
     fn test_editor_colors_cursor_visible_on_dark() {
         let dark = EditorColors::dark();
-        let contrast = (dark.background.r() as i32 - dark.cursor.r() as i32).abs() +
-                       (dark.background.g() as i32 - dark.cursor.g() as i32).abs() +
-                       (dark.background.b() as i32 - dark.cursor.b() as i32).abs();
+        let contrast = (dark.background.r() as i32 - dark.cursor.r() as i32).abs()
+            + (dark.background.g() as i32 - dark.cursor.g() as i32).abs()
+            + (dark.background.b() as i32 - dark.cursor.b() as i32).abs();
         assert!(contrast > 200, "Cursor should have sufficient contrast");
     }
 
@@ -736,7 +759,7 @@ mod theme_comprehensive_tests {
     fn test_markdown_colors_code_bg_distinct() {
         let light = MarkdownPreviewColors::light();
         let dark = MarkdownPreviewColors::dark();
-        
+
         // Code background should be slightly different from main background
         assert_ne!(light.code_bg, light.background);
         assert_ne!(dark.code_bg, dark.background);
@@ -746,7 +769,7 @@ mod theme_comprehensive_tests {
     fn test_markdown_colors_blockquote_visible() {
         let light = MarkdownPreviewColors::light();
         let dark = MarkdownPreviewColors::dark();
-        
+
         // Blockquote border should be visible
         assert!(light.blockquote_border.a() > 100);
         assert!(dark.blockquote_border.a() > 100);
@@ -756,7 +779,7 @@ mod theme_comprehensive_tests {
 // === Markdown Preview Comprehensive Tests ===
 
 mod markdown_comprehensive_tests {
-    use pulldown_cmark::{Event, Options, Parser, Tag, HeadingLevel, CodeBlockKind};
+    use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag};
 
     #[test]
     fn test_heading_levels() {
@@ -764,8 +787,10 @@ mod markdown_comprehensive_tests {
             let markdown = format!("{} Heading {}", "#".repeat(level), level);
             let parser = Parser::new_ext(&markdown, Options::all());
             let events: Vec<Event> = parser.collect();
-            
-            let has_heading = events.iter().any(|e| matches!(e, Event::Start(Tag::Heading { .. })));
+
+            let has_heading = events
+                .iter()
+                .any(|e| matches!(e, Event::Start(Tag::Heading { .. })));
             assert!(has_heading, "Should parse heading level {}", level);
         }
     }
@@ -775,10 +800,12 @@ mod markdown_comprehensive_tests {
         let markdown = "```rust\nfn main() {}\n```";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        let code_block = events.iter().find(|e| matches!(e, Event::Start(Tag::CodeBlock(_))));
+
+        let code_block = events
+            .iter()
+            .find(|e| matches!(e, Event::Start(Tag::CodeBlock(_))));
         assert!(code_block.is_some());
-        
+
         if let Some(Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(lang)))) = code_block {
             assert_eq!(lang.as_ref(), "rust");
         }
@@ -789,8 +816,10 @@ mod markdown_comprehensive_tests {
         let markdown = "```\ncode\n```";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::CodeBlock(_)))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::CodeBlock(_)))));
     }
 
     #[test]
@@ -798,7 +827,7 @@ mod markdown_comprehensive_tests {
         let markdown = "This is `inline code` here";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         let code = events.iter().find(|e| matches!(e, Event::Code(_)));
         assert!(code.is_some());
         if let Some(Event::Code(text)) = code {
@@ -811,8 +840,10 @@ mod markdown_comprehensive_tests {
         let markdown = "*italic*";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Emphasis))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Emphasis))));
     }
 
     #[test]
@@ -820,8 +851,10 @@ mod markdown_comprehensive_tests {
         let markdown = "**bold**";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Strong))));
+
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Strong))));
     }
 
     #[test]
@@ -829,8 +862,10 @@ mod markdown_comprehensive_tests {
         let markdown = "[link text](https://example.com)";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        let link = events.iter().find(|e| matches!(e, Event::Start(Tag::Link { .. })));
+
+        let link = events
+            .iter()
+            .find(|e| matches!(e, Event::Start(Tag::Link { .. })));
         assert!(link.is_some());
     }
 
@@ -839,8 +874,10 @@ mod markdown_comprehensive_tests {
         let markdown = "- item 1\n- item 2\n- item 3";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        let list = events.iter().find(|e| matches!(e, Event::Start(Tag::List(None))));
+
+        let list = events
+            .iter()
+            .find(|e| matches!(e, Event::Start(Tag::List(None))));
         assert!(list.is_some());
     }
 
@@ -849,8 +886,10 @@ mod markdown_comprehensive_tests {
         let markdown = "1. item 1\n2. item 2\n3. item 3";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        let list = events.iter().find(|e| matches!(e, Event::Start(Tag::List(Some(_)))));
+
+        let list = events
+            .iter()
+            .find(|e| matches!(e, Event::Start(Tag::List(Some(_)))));
         assert!(list.is_some());
     }
 
@@ -859,8 +898,9 @@ mod markdown_comprehensive_tests {
         let markdown = "- item 1\n  - nested 1\n  - nested 2\n- item 2";
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
-        let list_count = events.iter()
+
+        let list_count = events
+            .iter()
             .filter(|e| matches!(e, Event::Start(Tag::List(_))))
             .count();
         assert!(list_count >= 2, "Should have nested lists");
@@ -887,16 +927,40 @@ fn main() {}
 "#;
         let parser = Parser::new_ext(markdown, Options::all());
         let events: Vec<Event> = parser.collect();
-        
+
         // Should have all elements
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Heading { level: HeadingLevel::H1, .. }))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Heading { level: HeadingLevel::H2, .. }))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Strong))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Emphasis))));
+        assert!(events.iter().any(|e| matches!(
+            e,
+            Event::Start(Tag::Heading {
+                level: HeadingLevel::H1,
+                ..
+            })
+        )));
+        assert!(events.iter().any(|e| matches!(
+            e,
+            Event::Start(Tag::Heading {
+                level: HeadingLevel::H2,
+                ..
+            })
+        )));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Strong))));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Emphasis))));
         assert!(events.iter().any(|e| matches!(e, Event::Code(_))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::List(_)))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::BlockQuote(_)))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::CodeBlock(_)))));
-        assert!(events.iter().any(|e| matches!(e, Event::Start(Tag::Link { .. }))));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::List(_)))));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::BlockQuote(_)))));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::CodeBlock(_)))));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, Event::Start(Tag::Link { .. }))));
     }
 }
