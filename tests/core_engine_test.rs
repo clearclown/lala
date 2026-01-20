@@ -298,3 +298,273 @@ fn test_line_access_empty_buffer() {
     assert_eq!(buffer.line(0), Some("".to_string()));
     assert_eq!(buffer.line(1), None);
 }
+
+// === Comprehensive Position Tests ===
+
+#[test]
+fn test_position_to_char_idx_multiline() {
+    let buffer = Buffer::from_string(
+        BufferId(0),
+        "Line 1\nLine 2\nLine 3\n".to_string(),
+        None,
+    );
+
+    // First character
+    assert_eq!(buffer.position_to_char_idx(Position::new(0, 0)).unwrap(), 0);
+    // End of first line (including newline position)
+    assert_eq!(buffer.position_to_char_idx(Position::new(0, 6)).unwrap(), 6);
+    // Start of second line
+    assert_eq!(buffer.position_to_char_idx(Position::new(1, 0)).unwrap(), 7);
+    // Middle of second line
+    assert_eq!(buffer.position_to_char_idx(Position::new(1, 3)).unwrap(), 10);
+    // Start of third line
+    assert_eq!(buffer.position_to_char_idx(Position::new(2, 0)).unwrap(), 14);
+}
+
+#[test]
+fn test_char_idx_to_position_multiline() {
+    let buffer = Buffer::from_string(
+        BufferId(0),
+        "Line 1\nLine 2\nLine 3\n".to_string(),
+        None,
+    );
+
+    // First character
+    assert_eq!(buffer.char_idx_to_position(0).unwrap(), Position::new(0, 0));
+    // Last character of first line
+    assert_eq!(buffer.char_idx_to_position(6).unwrap(), Position::new(0, 6));
+    // First character of second line
+    assert_eq!(buffer.char_idx_to_position(7).unwrap(), Position::new(1, 0));
+    // Middle of second line
+    assert_eq!(buffer.char_idx_to_position(10).unwrap(), Position::new(1, 3));
+}
+
+#[test]
+fn test_position_roundtrip() {
+    let buffer = Buffer::from_string(
+        BufferId(0),
+        "Hello World\nこんにちは\n🎉 Emoji\n".to_string(),
+        None,
+    );
+
+    // Test various positions
+    let positions = [
+        Position::new(0, 0),
+        Position::new(0, 5),
+        Position::new(1, 0),
+        Position::new(1, 3),
+        Position::new(2, 0),
+        Position::new(2, 2),
+    ];
+
+    for pos in positions.iter() {
+        let char_idx = buffer.position_to_char_idx(*pos).unwrap();
+        let back = buffer.char_idx_to_position(char_idx).unwrap();
+        assert_eq!(*pos, back, "Roundtrip failed for {:?}", pos);
+    }
+}
+
+// === Arabic and RTL Text Tests ===
+
+#[test]
+fn test_arabic_text() {
+    let text = "مرحبا بالعالم";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+    assert_eq!(buffer.line_count(), 1);
+}
+
+#[test]
+fn test_hebrew_text() {
+    let text = "שלום עולם";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+    assert_eq!(buffer.line_count(), 1);
+}
+
+#[test]
+fn test_mixed_rtl_ltr_text() {
+    let text = "Hello مرحبا World שלום";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+#[test]
+fn test_arabic_multiline() {
+    let text = "السطر الأول\nالسطر الثاني\nالسطر الثالث";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.line_count(), 3);
+    assert!(buffer.line(0).unwrap().contains("الأول"));
+    assert!(buffer.line(1).unwrap().contains("الثاني"));
+    assert!(buffer.line(2).unwrap().contains("الثالث"));
+}
+
+// === Special Characters Tests ===
+
+#[test]
+fn test_tab_characters() {
+    let text = "col1\tcol2\tcol3";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+#[test]
+fn test_zero_width_characters() {
+    // Zero-width joiner and non-joiner
+    let text = "a\u{200B}b\u{200C}c\u{200D}d";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+#[test]
+fn test_combining_characters() {
+    // e with acute accent (combining)
+    let text = "cafe\u{0301}";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+#[test]
+fn test_surrogate_pair_emoji() {
+    // Family emoji (multiple code points)
+    let text = "👨‍👩‍👧‍👦";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+// === Replace Range Edge Cases ===
+
+#[test]
+fn test_replace_at_start() {
+    let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
+
+    buffer
+        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 5)), "Hi")
+        .unwrap();
+
+    assert_eq!(buffer.content(), "Hi World");
+}
+
+#[test]
+fn test_replace_at_end() {
+    let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
+
+    buffer
+        .replace_range(Range::new(Position::new(0, 6), Position::new(0, 11)), "Universe")
+        .unwrap();
+
+    assert_eq!(buffer.content(), "Hello Universe");
+}
+
+#[test]
+fn test_replace_entire_content() {
+    let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
+
+    buffer
+        .replace_range(Range::new(Position::new(0, 0), Position::new(0, 11)), "New Content")
+        .unwrap();
+
+    assert_eq!(buffer.content(), "New Content");
+}
+
+#[test]
+fn test_replace_empty_range() {
+    let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
+    let pos = Position::new(0, 5);
+
+    // Insert without replacing
+    buffer
+        .replace_range(Range::new(pos, pos), " Beautiful")
+        .unwrap();
+
+    assert_eq!(buffer.content(), "Hello Beautiful World");
+}
+
+#[test]
+fn test_replace_multiline() {
+    let mut buffer = Buffer::from_string(
+        BufferId(0),
+        "Line 1\nLine 2\nLine 3".to_string(),
+        None,
+    );
+
+    // Replace from middle of line 1 to middle of line 2
+    buffer
+        .replace_range(
+            Range::new(Position::new(0, 5), Position::new(1, 5)),
+            " NEW ",
+        )
+        .unwrap();
+
+    assert_eq!(buffer.content(), "Line  NEW 2\nLine 3");
+}
+
+// === BufferId Tests ===
+
+#[test]
+fn test_buffer_id_equality() {
+    assert_eq!(BufferId(0), BufferId(0));
+    assert_ne!(BufferId(0), BufferId(1));
+}
+
+#[test]
+fn test_buffer_id_hash() {
+    use std::collections::HashSet;
+    
+    let mut set = HashSet::new();
+    set.insert(BufferId(0));
+    set.insert(BufferId(1));
+    set.insert(BufferId(0)); // Duplicate
+    
+    assert_eq!(set.len(), 2);
+}
+
+// === Range Validation Tests ===
+
+#[test]
+fn test_invalid_range_start_greater_than_end() {
+    let mut buffer = Buffer::from_string(BufferId(0), "Hello World".to_string(), None);
+
+    let result = buffer.replace_range(
+        Range::new(Position::new(0, 10), Position::new(0, 5)),
+        "X",
+    );
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_invalid_column_position() {
+    let buffer = Buffer::from_string(BufferId(0), "Hello".to_string(), None);
+
+    // Column 100 is way beyond the line length
+    let result = buffer.position_to_char_idx(Position::new(0, 100));
+    assert!(result.is_err());
+}
+
+// === Content Preservation Tests ===
+
+#[test]
+fn test_content_preserves_whitespace() {
+    let text = "  \t  Leading spaces\t\n\nMultiple newlines\n\n\n   Trailing spaces   ";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}
+
+#[test]
+fn test_content_preserves_unicode_whitespace() {
+    // Various unicode whitespace characters
+    let text = "Normal\u{00A0}Non-breaking\u{2003}Em-space\u{2009}Thin-space";
+    let buffer = Buffer::from_string(BufferId(0), text.to_string(), None);
+
+    assert_eq!(buffer.content(), text);
+}

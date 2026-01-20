@@ -1,3 +1,6 @@
+// Windows: Hide console window when running as GUI application
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use eframe::egui;
 use lala::cli::{
     html_view, latex_view, markdown_view, mermaid_view, parse_args_default, StartupMode,
@@ -6,7 +9,7 @@ use lala::LalaApp;
 use std::fs;
 use std::process;
 
-/// Setup custom fonts to support CJK (Chinese, Japanese, Korean) characters
+/// Setup custom fonts to support CJK (Chinese, Japanese, Korean) and Arabic/RTL characters
 fn setup_custom_fonts(ctx: &egui::Context) {
     use egui::FontFamily;
     use std::sync::Arc;
@@ -65,6 +68,63 @@ fn setup_custom_fonts(ctx: &egui::Context) {
                 .or_default()
                 .insert(0, "IPAGothic".to_owned());
         }
+    }
+
+    // Load Arabic/RTL fonts
+    // Try to load Noto Sans Arabic for Arabic/Persian/Urdu support
+    if let Ok(font_data) =
+        std::fs::read("/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf")
+            .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansArabic-Regular.ttf"))
+            .or_else(|_| std::fs::read("/usr/share/fonts/noto/NotoSansArabic-Regular.ttf"))
+            .or_else(|_| {
+                std::fs::read("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+            })
+            // Windows paths
+            .or_else(|_| std::fs::read("C:\\Windows\\Fonts\\arial.ttf"))
+            // macOS paths
+            .or_else(|_| std::fs::read("/System/Library/Fonts/GeezaPro.ttc"))
+    {
+        fonts.font_data.insert(
+            "NotoSansArabic".to_owned(),
+            Arc::new(egui::FontData::from_owned(font_data)),
+        );
+
+        // Add Arabic font to families (after CJK if present)
+        fonts
+            .families
+            .entry(FontFamily::Proportional)
+            .or_default()
+            .push("NotoSansArabic".to_owned());
+
+        fonts
+            .families
+            .entry(FontFamily::Monospace)
+            .or_default()
+            .push("NotoSansArabic".to_owned());
+    }
+
+    // Try to load Noto Sans Hebrew for Hebrew support
+    if let Ok(font_data) =
+        std::fs::read("/usr/share/fonts/truetype/noto/NotoSansHebrew-Regular.ttf")
+            .or_else(|_| std::fs::read("/usr/share/fonts/opentype/noto/NotoSansHebrew-Regular.ttf"))
+            .or_else(|_| std::fs::read("/usr/share/fonts/noto/NotoSansHebrew-Regular.ttf"))
+    {
+        fonts.font_data.insert(
+            "NotoSansHebrew".to_owned(),
+            Arc::new(egui::FontData::from_owned(font_data)),
+        );
+
+        fonts
+            .families
+            .entry(FontFamily::Proportional)
+            .or_default()
+            .push("NotoSansHebrew".to_owned());
+
+        fonts
+            .families
+            .entry(FontFamily::Monospace)
+            .or_default()
+            .push("NotoSansHebrew".to_owned());
     }
 
     ctx.set_fonts(fonts);

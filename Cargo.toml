@@ -91,6 +91,9 @@ ego-tree = "0.6"          # For HTML DOM traversal
 # Directory access
 dirs = "5.0"              # Cross-platform directory paths
 
+# Open URLs in default browser
+open = "5.3"
+
 # HTTP client for LLM integration (optional feature)
 reqwest = { version = "0.12", features = ["json", "blocking", "rustls-tls"], default-features = false, optional = true }
 serde_json = "1.0"

@@ -486,11 +486,11 @@ impl LalaApp {
 
 impl eframe::App for LalaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Apply theme
+        // Apply theme - use custom themes for both light and dark
         if self.is_light_theme {
             ctx.set_visuals(theme::custom_light_theme());
         } else {
-            ctx.set_visuals(egui::Visuals::dark());
+            ctx.set_visuals(theme::custom_dark_theme());
         }
 
         // Handle keyboard shortcuts

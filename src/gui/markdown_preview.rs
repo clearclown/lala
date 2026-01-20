@@ -83,6 +83,10 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
     let mut i = 0;
     let mut list_item_number = 0;
     let mut in_ordered_list = false;
+    let mut list_depth: u32 = 0;
+    #[allow(unused_assignments)]
+    let mut in_blockquote = false;
+    let mut task_list_marker: Option<bool> = None;
 
     while i < events.len() {
         match &events[i] {
@@ -93,17 +97,38 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
 
                 let text = extract_text_until_end(&events[i..], TagEnd::Heading(heading_level));
                 let font_size = match heading_level {
-                    HeadingLevel::H1 => 30.0,
-                    HeadingLevel::H2 => 24.0,
-                    HeadingLevel::H3 => 20.0,
+                    HeadingLevel::H1 => 32.0,
+                    HeadingLevel::H2 => 26.0,
+                    HeadingLevel::H3 => 22.0,
                     HeadingLevel::H4 => 18.0,
                     HeadingLevel::H5 => 16.0,
                     HeadingLevel::H6 => 14.0,
                 };
 
-                ui.add_space(10.0);
-                ui.label(egui::RichText::new(text).size(font_size).strong());
-                ui.add_space(5.0);
+                // Add heading style with proper spacing
+                ui.add_space(12.0);
+                let heading_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(250, 250, 250)
+                } else {
+                    egui::Color32::from_rgb(17, 24, 39)
+                };
+                ui.label(egui::RichText::new(text).size(font_size).strong().color(heading_color));
+                
+                // Add underline for H1 and H2
+                if matches!(heading_level, HeadingLevel::H1 | HeadingLevel::H2) {
+                    ui.add_space(4.0);
+                    let separator_color = if ui.visuals().dark_mode {
+                        egui::Color32::from_rgb(63, 63, 70)
+                    } else {
+                        egui::Color32::from_rgb(229, 231, 235)
+                    };
+                    ui.add(egui::Separator::default().spacing(0.0));
+                    ui.painter().line_segment(
+                        [ui.cursor().min, egui::pos2(ui.cursor().max.x, ui.cursor().min.y)],
+                        egui::Stroke::new(1.0, separator_color),
+                    );
+                }
+                ui.add_space(8.0);
 
                 // Skip to end of heading
                 while i < events.len() {
@@ -118,9 +143,21 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
             Event::Start(Tag::Paragraph) => {
                 i += 1;
                 let rich_text = extract_rich_text(&events[i..], TagEnd::Paragraph);
-                ui.add_space(5.0);
-                ui.label(rich_text);
-                ui.add_space(5.0);
+                
+                if in_blockquote {
+                    // Blockquote styling
+                    ui.label(rich_text.italics().color(
+                        if ui.visuals().dark_mode {
+                            egui::Color32::from_rgb(161, 161, 170)
+                        } else {
+                            egui::Color32::from_rgb(107, 114, 128)
+                        }
+                    ));
+                } else {
+                    ui.add_space(4.0);
+                    ui.label(rich_text);
+                    ui.add_space(4.0);
+                }
 
                 // Skip to end of paragraph
                 while i < events.len() {
@@ -131,35 +168,128 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 }
             }
 
+            // ========== 引用 (Blockquotes) ==========
+            Event::Start(Tag::BlockQuote(_)) => {
+                in_blockquote = true;
+                ui.add_space(8.0);
+                let border_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(96, 165, 250)
+                } else {
+                    egui::Color32::from_rgb(59, 130, 246)
+                };
+                let bg_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgba_unmultiplied(30, 64, 115, 50)
+                } else {
+                    egui::Color32::from_rgba_unmultiplied(191, 219, 254, 100)
+                };
+                
+                egui::Frame::NONE
+                    .fill(bg_color)
+                    .stroke(egui::Stroke::new(3.0, border_color))
+                    .inner_margin(egui::Margin::symmetric(12, 8))
+                    .outer_margin(egui::Margin::symmetric(0, 4))
+                    .show(ui, |ui| {
+                        i += 1;
+                        while i < events.len() && !matches!(events[i], Event::End(TagEnd::BlockQuote(_))) {
+                            match &events[i] {
+                                Event::Start(Tag::Paragraph) => {
+                                    i += 1;
+                                    let text = extract_text_until_end(&events[i..], TagEnd::Paragraph);
+                                    let quote_color = if ui.visuals().dark_mode {
+                                        egui::Color32::from_rgb(212, 212, 216)
+                                    } else {
+                                        egui::Color32::from_rgb(55, 65, 81)
+                                    };
+                                    ui.label(egui::RichText::new(text).italics().color(quote_color));
+                                    while i < events.len() && !matches!(events[i], Event::End(TagEnd::Paragraph)) {
+                                        i += 1;
+                                    }
+                                }
+                                _ => {}
+                            }
+                            i += 1;
+                        }
+                    });
+                in_blockquote = false;
+                ui.add_space(8.0);
+            }
+
             // ========== リスト (Lists) ==========
             Event::Start(Tag::List(first_number)) => {
                 in_ordered_list = first_number.is_some();
                 list_item_number = first_number.unwrap_or(0);
-                ui.add_space(5.0);
+                list_depth += 1;
+                if list_depth == 1 {
+                    ui.add_space(6.0);
+                }
             }
 
             Event::End(TagEnd::List(_)) => {
                 in_ordered_list = false;
                 list_item_number = 0;
-                ui.add_space(5.0);
+                list_depth = list_depth.saturating_sub(1);
+                if list_depth == 0 {
+                    ui.add_space(6.0);
+                }
+            }
+
+            // ========== タスクリストマーカー ==========
+            Event::TaskListMarker(checked) => {
+                task_list_marker = Some(*checked);
             }
 
             Event::Start(Tag::Item) => {
                 i += 1;
                 let text = extract_text_until_end(&events[i..], TagEnd::Item);
+                let indent = (list_depth - 1) as f32 * 20.0;
 
-                if in_ordered_list {
-                    list_item_number += 1;
-                    ui.horizontal(|ui| {
-                        ui.label(format!("{list_item_number}."));
-                        ui.label(text);
-                    });
-                } else {
-                    ui.horizontal(|ui| {
-                        ui.label("•");
-                        ui.label(text);
-                    });
-                }
+                ui.horizontal(|ui| {
+                    ui.add_space(indent);
+                    
+                    if let Some(checked) = task_list_marker.take() {
+                        // Task list item
+                        let checkbox = if checked { "☑" } else { "☐" };
+                        let checkbox_color = if checked {
+                            egui::Color32::from_rgb(34, 197, 94)
+                        } else if ui.visuals().dark_mode {
+                            egui::Color32::from_rgb(113, 113, 122)
+                        } else {
+                            egui::Color32::from_rgb(156, 163, 175)
+                        };
+                        ui.label(egui::RichText::new(checkbox).color(checkbox_color));
+                        let text_color = if checked {
+                            if ui.visuals().dark_mode {
+                                egui::Color32::from_rgb(113, 113, 122)
+                            } else {
+                                egui::Color32::from_rgb(156, 163, 175)
+                            }
+                        } else {
+                            ui.visuals().text_color()
+                        };
+                        let mut rt = egui::RichText::new(&text).color(text_color);
+                        if checked {
+                            rt = rt.strikethrough();
+                        }
+                        ui.label(rt);
+                    } else if in_ordered_list {
+                        list_item_number += 1;
+                        let num_color = if ui.visuals().dark_mode {
+                            egui::Color32::from_rgb(161, 161, 170)
+                        } else {
+                            egui::Color32::from_rgb(107, 114, 128)
+                        };
+                        ui.label(egui::RichText::new(format!("{}.", list_item_number)).color(num_color));
+                        ui.label(&text);
+                    } else {
+                        let bullet_color = if ui.visuals().dark_mode {
+                            egui::Color32::from_rgb(96, 165, 250)
+                        } else {
+                            egui::Color32::from_rgb(59, 130, 246)
+                        };
+                        ui.label(egui::RichText::new("•").color(bullet_color));
+                        ui.label(&text);
+                    }
+                });
 
                 // Skip to end of item
                 while i < events.len() {
@@ -181,24 +311,55 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 i += 1;
                 let code = extract_text_until_end(&events[i..], TagEnd::CodeBlock);
 
-                ui.add_space(5.0);
+                ui.add_space(8.0);
+                
+                // Code block with language label
+                let bg_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(30, 30, 33)
+                } else {
+                    egui::Color32::from_rgb(243, 244, 246)
+                };
+                let border_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(63, 63, 70)
+                } else {
+                    egui::Color32::from_rgb(209, 213, 219)
+                };
+                
                 egui::Frame::NONE
-                    .fill(ui.style().visuals.code_bg_color)
-                    .inner_margin(egui::Margin::same(8))
+                    .fill(bg_color)
+                    .stroke(egui::Stroke::new(1.0, border_color))
+                    .corner_radius(egui::CornerRadius::same(6))
+                    .inner_margin(egui::Margin::same(12))
                     .show(ui, |ui| {
+                        // Language label if specified
+                        if !lang.is_empty() {
+                            let label_color = if ui.visuals().dark_mode {
+                                egui::Color32::from_rgb(113, 113, 122)
+                            } else {
+                                egui::Color32::from_rgb(156, 163, 175)
+                            };
+                            ui.label(egui::RichText::new(&lang).small().color(label_color));
+                            ui.add_space(4.0);
+                        }
+                        
                         // Apply syntax highlighting if language is specified
                         if !lang.is_empty() && !code.is_empty() {
                             render_highlighted_code(ui, &code, &lang);
                         } else {
                             // Fallback to plain monospace
+                            let code_color = if ui.visuals().dark_mode {
+                                egui::Color32::from_rgb(212, 212, 216)
+                            } else {
+                                egui::Color32::from_rgb(55, 65, 81)
+                            };
                             ui.label(
-                                egui::RichText::new(code)
+                                egui::RichText::new(&code)
                                     .monospace()
-                                    .color(egui::Color32::from_rgb(200, 200, 200)),
+                                    .color(code_color),
                             );
                         }
                     });
-                ui.add_space(5.0);
+                ui.add_space(8.0);
 
                 // Skip to end of code block
                 while i < events.len() {
@@ -211,18 +372,113 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
 
             // ========== インラインコード (Inline Code) ==========
             Event::Code(code) => {
+                let bg_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(52, 52, 58)
+                } else {
+                    egui::Color32::from_rgb(243, 244, 246)
+                };
+                let code_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(248, 113, 113)
+                } else {
+                    egui::Color32::from_rgb(153, 27, 27)
+                };
                 ui.label(
                     egui::RichText::new(code.as_ref())
                         .monospace()
-                        .background_color(ui.style().visuals.code_bg_color),
+                        .color(code_color)
+                        .background_color(bg_color),
                 );
+            }
+
+            // ========== リンク (Links) ==========
+            Event::Start(Tag::Link { dest_url, title, .. }) => {
+                i += 1;
+                let link_text = extract_text_until_end(&events[i..], TagEnd::Link);
+                let url = dest_url.to_string();
+                let tooltip = if title.is_empty() { url.clone() } else { title.to_string() };
+                
+                let link_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(96, 165, 250)
+                } else {
+                    egui::Color32::from_rgb(37, 99, 235)
+                };
+                
+                if ui.link(egui::RichText::new(&link_text).color(link_color).underline())
+                    .on_hover_text(&tooltip)
+                    .clicked()
+                {
+                    // Try to open URL in default browser
+                    let _ = open::that(&url);
+                }
+
+                // Skip to end of link
+                while i < events.len() {
+                    if matches!(events[i], Event::End(TagEnd::Link)) {
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+
+            // ========== 画像 (Images) ==========
+            Event::Start(Tag::Image { dest_url, title, .. }) => {
+                i += 1;
+                let alt_text = extract_text_until_end(&events[i..], TagEnd::Image);
+                let tooltip = if title.is_empty() { alt_text.clone() } else { title.to_string() };
+                
+                ui.add_space(4.0);
+                let border_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_rgb(63, 63, 70)
+                } else {
+                    egui::Color32::from_rgb(209, 213, 219)
+                };
+                
+                egui::Frame::NONE
+                    .stroke(egui::Stroke::new(1.0, border_color))
+                    .corner_radius(egui::CornerRadius::same(4))
+                    .inner_margin(egui::Margin::same(8))
+                    .show(ui, |ui| {
+                        let icon_color = if ui.visuals().dark_mode {
+                            egui::Color32::from_rgb(113, 113, 122)
+                        } else {
+                            egui::Color32::from_rgb(156, 163, 175)
+                        };
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("🖼").size(20.0).color(icon_color));
+                            ui.vertical(|ui| {
+                                ui.label(egui::RichText::new(&alt_text).color(ui.visuals().text_color()));
+                                ui.label(egui::RichText::new(dest_url.as_ref()).small().color(icon_color));
+                            });
+                        });
+                    })
+                    .response
+                    .on_hover_text(tooltip);
+                ui.add_space(4.0);
+
+                // Skip to end of image
+                while i < events.len() {
+                    if matches!(events[i], Event::End(TagEnd::Image)) {
+                        break;
+                    }
+                    i += 1;
+                }
             }
 
             // ========== 水平線 (Horizontal Rule) ==========
             Event::Rule => {
-                ui.add_space(5.0);
-                ui.separator();
-                ui.add_space(5.0);
+                ui.add_space(12.0);
+                ui.add(egui::Separator::default().spacing(0.0));
+                ui.add_space(12.0);
+            }
+
+            // ========== ソフト改行 ==========
+            Event::SoftBreak => {
+                // Treat as space
+            }
+
+            // ========== ハード改行 ==========
+            Event::HardBreak => {
+                ui.add_space(8.0);
             }
 
             // ========== その他 ==========
