@@ -112,8 +112,13 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 } else {
                     egui::Color32::from_rgb(17, 24, 39)
                 };
-                ui.label(egui::RichText::new(text).size(font_size).strong().color(heading_color));
-                
+                ui.label(
+                    egui::RichText::new(text)
+                        .size(font_size)
+                        .strong()
+                        .color(heading_color),
+                );
+
                 // Add underline for H1 and H2
                 if matches!(heading_level, HeadingLevel::H1 | HeadingLevel::H2) {
                     ui.add_space(4.0);
@@ -124,7 +129,10 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                     };
                     ui.add(egui::Separator::default().spacing(0.0));
                     ui.painter().line_segment(
-                        [ui.cursor().min, egui::pos2(ui.cursor().max.x, ui.cursor().min.y)],
+                        [
+                            ui.cursor().min,
+                            egui::pos2(ui.cursor().max.x, ui.cursor().min.y),
+                        ],
                         egui::Stroke::new(1.0, separator_color),
                     );
                 }
@@ -143,16 +151,14 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
             Event::Start(Tag::Paragraph) => {
                 i += 1;
                 let rich_text = extract_rich_text(&events[i..], TagEnd::Paragraph);
-                
+
                 if in_blockquote {
                     // Blockquote styling
-                    ui.label(rich_text.italics().color(
-                        if ui.visuals().dark_mode {
-                            egui::Color32::from_rgb(161, 161, 170)
-                        } else {
-                            egui::Color32::from_rgb(107, 114, 128)
-                        }
-                    ));
+                    ui.label(rich_text.italics().color(if ui.visuals().dark_mode {
+                        egui::Color32::from_rgb(161, 161, 170)
+                    } else {
+                        egui::Color32::from_rgb(107, 114, 128)
+                    }));
                 } else {
                     ui.add_space(4.0);
                     ui.label(rich_text);
@@ -170,7 +176,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
 
             // ========== 引用 (Blockquotes) ==========
             Event::Start(Tag::BlockQuote(_)) => {
-                in_blockquote = true;
+                let _in_blockquote = true; // Used for context tracking
                 ui.add_space(8.0);
                 let border_color = if ui.visuals().dark_mode {
                     egui::Color32::from_rgb(96, 165, 250)
@@ -182,7 +188,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 } else {
                     egui::Color32::from_rgba_unmultiplied(191, 219, 254, 100)
                 };
-                
+
                 egui::Frame::NONE
                     .fill(bg_color)
                     .stroke(egui::Stroke::new(3.0, border_color))
@@ -190,22 +196,23 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                     .outer_margin(egui::Margin::symmetric(0, 4))
                     .show(ui, |ui| {
                         i += 1;
-                        while i < events.len() && !matches!(events[i], Event::End(TagEnd::BlockQuote(_))) {
-                            match &events[i] {
-                                Event::Start(Tag::Paragraph) => {
+                        while i < events.len()
+                            && !matches!(events[i], Event::End(TagEnd::BlockQuote(_)))
+                        {
+                            if let Event::Start(Tag::Paragraph) = &events[i] {
+                                i += 1;
+                                let text = extract_text_until_end(&events[i..], TagEnd::Paragraph);
+                                let quote_color = if ui.visuals().dark_mode {
+                                    egui::Color32::from_rgb(212, 212, 216)
+                                } else {
+                                    egui::Color32::from_rgb(55, 65, 81)
+                                };
+                                ui.label(egui::RichText::new(text).italics().color(quote_color));
+                                while i < events.len()
+                                    && !matches!(events[i], Event::End(TagEnd::Paragraph))
+                                {
                                     i += 1;
-                                    let text = extract_text_until_end(&events[i..], TagEnd::Paragraph);
-                                    let quote_color = if ui.visuals().dark_mode {
-                                        egui::Color32::from_rgb(212, 212, 216)
-                                    } else {
-                                        egui::Color32::from_rgb(55, 65, 81)
-                                    };
-                                    ui.label(egui::RichText::new(text).italics().color(quote_color));
-                                    while i < events.len() && !matches!(events[i], Event::End(TagEnd::Paragraph)) {
-                                        i += 1;
-                                    }
                                 }
-                                _ => {}
                             }
                             i += 1;
                         }
@@ -245,7 +252,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
 
                 ui.horizontal(|ui| {
                     ui.add_space(indent);
-                    
+
                     if let Some(checked) = task_list_marker.take() {
                         // Task list item
                         let checkbox = if checked { "☑" } else { "☐" };
@@ -278,7 +285,9 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                         } else {
                             egui::Color32::from_rgb(107, 114, 128)
                         };
-                        ui.label(egui::RichText::new(format!("{}.", list_item_number)).color(num_color));
+                        ui.label(
+                            egui::RichText::new(format!("{}.", list_item_number)).color(num_color),
+                        );
                         ui.label(&text);
                     } else {
                         let bullet_color = if ui.visuals().dark_mode {
@@ -312,7 +321,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 let code = extract_text_until_end(&events[i..], TagEnd::CodeBlock);
 
                 ui.add_space(8.0);
-                
+
                 // Code block with language label
                 let bg_color = if ui.visuals().dark_mode {
                     egui::Color32::from_rgb(30, 30, 33)
@@ -324,7 +333,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                 } else {
                     egui::Color32::from_rgb(209, 213, 219)
                 };
-                
+
                 egui::Frame::NONE
                     .fill(bg_color)
                     .stroke(egui::Stroke::new(1.0, border_color))
@@ -341,7 +350,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                             ui.label(egui::RichText::new(&lang).small().color(label_color));
                             ui.add_space(4.0);
                         }
-                        
+
                         // Apply syntax highlighting if language is specified
                         if !lang.is_empty() && !code.is_empty() {
                             render_highlighted_code(ui, &code, &lang);
@@ -352,11 +361,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                             } else {
                                 egui::Color32::from_rgb(55, 65, 81)
                             };
-                            ui.label(
-                                egui::RichText::new(&code)
-                                    .monospace()
-                                    .color(code_color),
-                            );
+                            ui.label(egui::RichText::new(&code).monospace().color(code_color));
                         }
                     });
                 ui.add_space(8.0);
@@ -391,19 +396,30 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
             }
 
             // ========== リンク (Links) ==========
-            Event::Start(Tag::Link { dest_url, title, .. }) => {
+            Event::Start(Tag::Link {
+                dest_url, title, ..
+            }) => {
                 i += 1;
                 let link_text = extract_text_until_end(&events[i..], TagEnd::Link);
                 let url = dest_url.to_string();
-                let tooltip = if title.is_empty() { url.clone() } else { title.to_string() };
-                
+                let tooltip = if title.is_empty() {
+                    url.clone()
+                } else {
+                    title.to_string()
+                };
+
                 let link_color = if ui.visuals().dark_mode {
                     egui::Color32::from_rgb(96, 165, 250)
                 } else {
                     egui::Color32::from_rgb(37, 99, 235)
                 };
-                
-                if ui.link(egui::RichText::new(&link_text).color(link_color).underline())
+
+                if ui
+                    .link(
+                        egui::RichText::new(&link_text)
+                            .color(link_color)
+                            .underline(),
+                    )
                     .on_hover_text(&tooltip)
                     .clicked()
                 {
@@ -421,18 +437,24 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
             }
 
             // ========== 画像 (Images) ==========
-            Event::Start(Tag::Image { dest_url, title, .. }) => {
+            Event::Start(Tag::Image {
+                dest_url, title, ..
+            }) => {
                 i += 1;
                 let alt_text = extract_text_until_end(&events[i..], TagEnd::Image);
-                let tooltip = if title.is_empty() { alt_text.clone() } else { title.to_string() };
-                
+                let tooltip = if title.is_empty() {
+                    alt_text.clone()
+                } else {
+                    title.to_string()
+                };
+
                 ui.add_space(4.0);
                 let border_color = if ui.visuals().dark_mode {
                     egui::Color32::from_rgb(63, 63, 70)
                 } else {
                     egui::Color32::from_rgb(209, 213, 219)
                 };
-                
+
                 egui::Frame::NONE
                     .stroke(egui::Stroke::new(1.0, border_color))
                     .corner_radius(egui::CornerRadius::same(4))
@@ -446,8 +468,14 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                         ui.horizontal(|ui| {
                             ui.label(egui::RichText::new("🖼").size(20.0).color(icon_color));
                             ui.vertical(|ui| {
-                                ui.label(egui::RichText::new(&alt_text).color(ui.visuals().text_color()));
-                                ui.label(egui::RichText::new(dest_url.as_ref()).small().color(icon_color));
+                                ui.label(
+                                    egui::RichText::new(&alt_text).color(ui.visuals().text_color()),
+                                );
+                                ui.label(
+                                    egui::RichText::new(dest_url.as_ref())
+                                        .small()
+                                        .color(icon_color),
+                                );
                             });
                         });
                     })
@@ -584,11 +612,7 @@ fn render_highlighted_code(ui: &mut egui::Ui, code: &str, lang: &str) {
 
 /// Convert syntect Style to egui Color32
 fn style_to_color(style: Style) -> egui::Color32 {
-    egui::Color32::from_rgb(
-        style.foreground.r,
-        style.foreground.g,
-        style.foreground.b,
-    )
+    egui::Color32::from_rgb(style.foreground.r, style.foreground.g, style.foreground.b)
 }
 
 // ========== ユニットテスト ==========

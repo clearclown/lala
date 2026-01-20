@@ -249,10 +249,7 @@ mod detect_text_direction_tests {
     #[test]
     fn test_mixed_more_rtl() {
         // When RTL characters exceed LTR characters, returns Mixed
-        assert_eq!(
-            detect_text_direction("مرحبا Hello"),
-            TextDirection::Mixed
-        );
+        assert_eq!(detect_text_direction("مرحبا Hello"), TextDirection::Mixed);
     }
 
     #[test]
@@ -271,18 +268,12 @@ mod detect_text_direction_tests {
 
     #[test]
     fn test_numbers_only() {
-        assert_eq!(
-            detect_text_direction("123456"),
-            TextDirection::LeftToRight
-        );
+        assert_eq!(detect_text_direction("123456"), TextDirection::LeftToRight);
     }
 
     #[test]
     fn test_spaces_only() {
-        assert_eq!(
-            detect_text_direction("     "),
-            TextDirection::LeftToRight
-        );
+        assert_eq!(detect_text_direction("     "), TextDirection::LeftToRight);
     }
 
     #[test]
@@ -295,18 +286,12 @@ mod detect_text_direction_tests {
 
     #[test]
     fn test_single_rtl_char() {
-        assert_eq!(
-            detect_text_direction("ا"),
-            TextDirection::RightToLeft
-        );
+        assert_eq!(detect_text_direction("ا"), TextDirection::RightToLeft);
     }
 
     #[test]
     fn test_single_ltr_char() {
-        assert_eq!(
-            detect_text_direction("A"),
-            TextDirection::LeftToRight
-        );
+        assert_eq!(detect_text_direction("A"), TextDirection::LeftToRight);
     }
 }
 
@@ -338,17 +323,14 @@ mod text_direction_tests {
     }
 
     #[test]
-    fn test_clone() {
-        let dir = TextDirection::RightToLeft;
-        let cloned = dir.clone();
-        assert_eq!(dir, cloned);
-    }
-
-    #[test]
     fn test_copy() {
-        let dir = TextDirection::Mixed;
-        let copied = dir;
+        let dir = TextDirection::RightToLeft;
+        let copied = dir; // TextDirection implements Copy
         assert_eq!(dir, copied);
+
+        let dir2 = TextDirection::Mixed;
+        let copied2 = dir2;
+        assert_eq!(dir2, copied2);
     }
 
     #[test]
@@ -473,7 +455,10 @@ mod edge_cases {
         assert!(contains_rtl(&mixed));
         // Direction depends on character counts
         let dir = detect_text_direction(&mixed);
-        assert!(matches!(dir, TextDirection::Mixed | TextDirection::RightToLeft));
+        assert!(matches!(
+            dir,
+            TextDirection::Mixed | TextDirection::RightToLeft
+        ));
     }
 
     #[test]

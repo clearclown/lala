@@ -18,4 +18,6 @@ pub use editor::EditorPanel;
 pub use highlighting::SyntaxHighlighter;
 pub use rtl::{RtlText, RtlUiExt, TextDirection};
 pub use tab::EditorTabState;
-pub use theme::{custom_dark_theme, custom_light_theme, EditorColors, MarkdownPreviewColors, ThemeMode};
+pub use theme::{
+    custom_dark_theme, custom_light_theme, EditorColors, MarkdownPreviewColors, ThemeMode,
+};

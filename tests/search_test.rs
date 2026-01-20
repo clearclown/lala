@@ -81,11 +81,7 @@ mod literal_search_tests {
 
     #[test]
     fn test_multiline_search() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Line 1\nLine 2\nLine 3".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Line 1\nLine 2\nLine 3".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "Line", &options).unwrap();
         assert_eq!(results.len(), 3);
@@ -131,11 +127,7 @@ mod case_sensitivity_tests {
 
     #[test]
     fn test_case_sensitive_match() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello hello HELLO HeLLo".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Hello hello HELLO HeLLo".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: false,
@@ -147,11 +139,7 @@ mod case_sensitivity_tests {
 
     #[test]
     fn test_case_insensitive_match() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello hello HELLO HeLLo".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Hello hello HELLO HeLLo".to_string(), None);
         let options = SearchOptions {
             case_sensitive: false,
             use_regex: false,
@@ -176,11 +164,7 @@ mod case_sensitivity_tests {
     #[test]
     fn test_case_insensitive_ascii() {
         // Use ASCII to avoid byte/char index bugs in search function
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Test TEST TeSt".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Test TEST TeSt".to_string(), None);
         let options = SearchOptions {
             case_sensitive: false,
             use_regex: false,
@@ -214,11 +198,7 @@ mod regex_search_tests {
 
     #[test]
     fn test_word_boundary_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "test testing tester".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "test testing tester".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
@@ -279,11 +259,7 @@ mod regex_search_tests {
 
     #[test]
     fn test_case_insensitive_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello HELLO hello".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Hello HELLO hello".to_string(), None);
         let options = SearchOptions {
             case_sensitive: false,
             use_regex: true,
@@ -295,11 +271,7 @@ mod regex_search_tests {
 
     #[test]
     fn test_group_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "abc def abc ghi abc".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "abc def abc ghi abc".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
@@ -311,18 +283,14 @@ mod regex_search_tests {
 
     #[test]
     fn test_anchor_regex_start() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "start here\nstart again".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "start here\nstart again".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
             whole_word: false,
         };
         let results = search_in_buffer(&buffer, r"^start", &options).unwrap();
-        assert!(results.len() >= 1); // At least matches line start
+        assert!(!results.is_empty()); // At least matches line start
     }
 }
 
@@ -335,11 +303,8 @@ mod replace_tests {
 
     #[test]
     fn test_replace_first() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "hello world hello rust".to_string(),
-            None,
-        );
+        let mut buffer =
+            Buffer::from_string(BufferId(0), "hello world hello rust".to_string(), None);
         let options = SearchOptions::default();
         let count = replace_in_buffer(&mut buffer, "hello", "hi", &options, false).unwrap();
         assert_eq!(count, 1);
@@ -348,11 +313,8 @@ mod replace_tests {
 
     #[test]
     fn test_replace_all() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "hello world hello rust".to_string(),
-            None,
-        );
+        let mut buffer =
+            Buffer::from_string(BufferId(0), "hello world hello rust".to_string(), None);
         let options = SearchOptions::default();
         let count = replace_in_buffer(&mut buffer, "hello", "hi", &options, true).unwrap();
         assert_eq!(count, 2);
@@ -406,11 +368,7 @@ mod replace_tests {
 
     #[test]
     fn test_replace_multiline() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "line1\nline2\nline3".to_string(),
-            None,
-        );
+        let mut buffer = Buffer::from_string(BufferId(0), "line1\nline2\nline3".to_string(), None);
         let options = SearchOptions::default();
         let count = replace_in_buffer(&mut buffer, "line", "LINE", &options, true).unwrap();
         assert_eq!(count, 3);
@@ -419,11 +377,7 @@ mod replace_tests {
 
     #[test]
     fn test_replace_case_insensitive() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello HELLO hello".to_string(),
-            None,
-        );
+        let mut buffer = Buffer::from_string(BufferId(0), "Hello HELLO hello".to_string(), None);
         let options = SearchOptions {
             case_sensitive: false,
             use_regex: false,
@@ -436,11 +390,7 @@ mod replace_tests {
 
     #[test]
     fn test_replace_regex() {
-        let mut buffer = Buffer::from_string(
-            BufferId(0),
-            "abc123 def456 ghi789".to_string(),
-            None,
-        );
+        let mut buffer = Buffer::from_string(BufferId(0), "abc123 def456 ghi789".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
@@ -465,11 +415,7 @@ mod unicode_search_tests {
     #[test]
     fn test_ascii_search_in_unicode_context() {
         // Search for ASCII in content that also has Unicode
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello World Test".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Hello World Test".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "World", &options).unwrap();
         assert_eq!(results.len(), 1);
@@ -479,11 +425,7 @@ mod unicode_search_tests {
     #[test]
     fn test_accented_characters() {
         // Accented characters that are common in European languages
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "cafe resume cafe".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "cafe resume cafe".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "cafe", &options).unwrap();
         assert_eq!(results.len(), 2);
@@ -491,11 +433,7 @@ mod unicode_search_tests {
 
     #[test]
     fn test_search_with_numbers() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "test123 test456 test789".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "test123 test456 test789".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "test", &options).unwrap();
         assert_eq!(results.len(), 3);
@@ -503,11 +441,7 @@ mod unicode_search_tests {
 
     #[test]
     fn test_search_special_ascii() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "a+b*c a+b*c".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "a+b*c a+b*c".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: false,
@@ -520,11 +454,7 @@ mod unicode_search_tests {
     #[test]
     fn test_unicode_at_start() {
         // ASCII search when buffer starts with ASCII
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "test data here".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "test data here".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "test", &options).unwrap();
         assert_eq!(results.len(), 1);
@@ -532,11 +462,7 @@ mod unicode_search_tests {
 
     #[test]
     fn test_digits_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "abc123def456ghi".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "abc123def456ghi".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
@@ -550,11 +476,7 @@ mod unicode_search_tests {
 
     #[test]
     fn test_word_search_regex() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "word1 word2 word3".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "word1 word2 word3".to_string(), None);
         let options = SearchOptions {
             case_sensitive: true,
             use_regex: true,
@@ -566,11 +488,7 @@ mod unicode_search_tests {
 
     #[test]
     fn test_punctuation_search() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Hello! World? Test.".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Hello! World? Test.".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "!", &options).unwrap();
         assert_eq!(results.len(), 1);
@@ -602,11 +520,7 @@ mod search_result_tests {
 
     #[test]
     fn test_search_result_positions() {
-        let buffer = Buffer::from_string(
-            BufferId(0),
-            "Line one\nLine two".to_string(),
-            None,
-        );
+        let buffer = Buffer::from_string(BufferId(0), "Line one\nLine two".to_string(), None);
         let options = SearchOptions::default();
         let results = search_in_buffer(&buffer, "Line", &options).unwrap();
 
@@ -940,7 +854,11 @@ mod async_grep_tests {
     #[tokio::test]
     async fn test_grep_regex_pattern() {
         let temp_dir = TempDir::new().unwrap();
-        fs::write(temp_dir.path().join("test.txt"), "fn test1()\nfn test2()\nfn hello()").unwrap();
+        fs::write(
+            temp_dir.path().join("test.txt"),
+            "fn test1()\nfn test2()\nfn hello()",
+        )
+        .unwrap();
 
         let mut engine = GrepEngine::new();
         let options = GrepOptions {

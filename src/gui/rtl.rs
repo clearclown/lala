@@ -6,17 +6,12 @@
 use egui::{text::LayoutJob, Color32, FontId, TextFormat};
 
 /// Text direction
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TextDirection {
+    #[default]
     LeftToRight,
     RightToLeft,
     Mixed,
-}
-
-impl Default for TextDirection {
-    fn default() -> Self {
-        TextDirection::LeftToRight
-    }
 }
 
 /// Check if a character is RTL
@@ -75,11 +70,7 @@ pub fn get_text_alignment(direction: TextDirection) -> egui::Align {
 }
 
 /// Create a layout job with proper RTL support
-pub fn create_rtl_aware_layout(
-    text: &str,
-    font_id: FontId,
-    default_color: Color32,
-) -> LayoutJob {
+pub fn create_rtl_aware_layout(text: &str, font_id: FontId, default_color: Color32) -> LayoutJob {
     let mut job = LayoutJob::default();
     let direction = detect_text_direction(text);
 
@@ -138,10 +129,9 @@ impl RtlUiExt for egui::Ui {
     fn rtl_label(&mut self, text: &str) -> egui::Response {
         let rtl_text = RtlText::new(text);
         if rtl_text.is_rtl() {
-            self.with_layout(
-                egui::Layout::right_to_left(egui::Align::Center),
-                |ui| ui.label(text),
-            )
+            self.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.label(text)
+            })
             .inner
         } else {
             self.label(text)
@@ -151,10 +141,9 @@ impl RtlUiExt for egui::Ui {
     fn rtl_heading(&mut self, text: &str) -> egui::Response {
         let rtl_text = RtlText::new(text);
         if rtl_text.is_rtl() {
-            self.with_layout(
-                egui::Layout::right_to_left(egui::Align::Center),
-                |ui| ui.heading(text),
-            )
+            self.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.heading(text)
+            })
             .inner
         } else {
             self.heading(text)
@@ -215,10 +204,7 @@ mod tests {
         );
 
         // Mixed - more RTL
-        assert_eq!(
-            detect_text_direction("مرحبا Hello"),
-            TextDirection::Mixed
-        );
+        assert_eq!(detect_text_direction("مرحبا Hello"), TextDirection::Mixed);
 
         // Empty string
         assert_eq!(detect_text_direction(""), TextDirection::LeftToRight);

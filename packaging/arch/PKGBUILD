@@ -1,0 +1,36 @@
+# Maintainer: clearclown <clearcleaclown@gmail.com>
+pkgname=lala
+pkgver=0.3.0
+pkgrel=1
+pkgdesc="A modern, lightweight text editor with GUI and CLI support for Markdown, HTML, Mermaid, and LaTeX"
+arch=('x86_64' 'aarch64')
+url="https://github.com/clearclown/lala"
+license=('MIT' 'Apache-2.0')
+depends=()
+makedepends=('rust' 'cargo')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/clearclown/$pkgname/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('f76a898a5a2fa7281f6e69d5e5f8f3074415c675a9f09732e3bd7777658ef941')
+
+build() {
+    cd "$pkgname-$pkgver"
+    cargo build --release --locked
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    cargo test --release --locked
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+
+    # バイナリのインストール
+    install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
+
+    # ライセンスファイル
+    install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+    install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+
+    # ドキュメント
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
