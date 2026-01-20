@@ -262,8 +262,9 @@ fn test_read_nonexistent_file() {
 }
 
 #[test]
+#[cfg_attr(windows, ignore)] // Windows handles root paths differently
 fn test_write_to_readonly_location() {
-    // Try to write to root (should fail on most systems)
+    // Try to write to root (should fail on Unix systems)
     let result = fs::write("/cannot_write_here.txt", "content");
     assert!(result.is_err());
 }
