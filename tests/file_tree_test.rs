@@ -101,7 +101,12 @@ mod path_type_tests {
 
     #[test]
     fn test_absolute_path() {
-        let tree = FileTree::new(PathBuf::from("/absolute/path"));
+        // Use platform-specific absolute paths
+        #[cfg(windows)]
+        let path = PathBuf::from("C:\\absolute\\path");
+        #[cfg(not(windows))]
+        let path = PathBuf::from("/absolute/path");
+        let tree = FileTree::new(path);
         assert!(tree.root().is_absolute());
     }
 
@@ -112,6 +117,7 @@ mod path_type_tests {
     }
 
     #[test]
+    #[cfg_attr(windows, ignore)] // Unix-style root path test
     fn test_root_path() {
         let tree = FileTree::new(PathBuf::from("/"));
         assert_eq!(tree.root(), Path::new("/"));
