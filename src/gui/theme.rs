@@ -139,17 +139,12 @@ pub fn custom_dark_theme() -> egui::Visuals {
 }
 
 /// Theme settings for the application
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub enum ThemeMode {
     Light,
-    Dark,
+    #[default]
+    Dark, // Default to dark theme for code editing
     System, // Future: auto-detect system theme
-}
-
-impl Default for ThemeMode {
-    fn default() -> Self {
-        ThemeMode::Dark // Default to dark theme for code editing
-    }
 }
 
 /// Get visuals for the specified theme mode

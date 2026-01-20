@@ -338,17 +338,14 @@ mod text_direction_tests {
     }
 
     #[test]
-    fn test_clone() {
-        let dir = TextDirection::RightToLeft;
-        let cloned = dir.clone();
-        assert_eq!(dir, cloned);
-    }
-
-    #[test]
     fn test_copy() {
-        let dir = TextDirection::Mixed;
-        let copied = dir;
+        let dir = TextDirection::RightToLeft;
+        let copied = dir; // TextDirection implements Copy
         assert_eq!(dir, copied);
+
+        let dir2 = TextDirection::Mixed;
+        let copied2 = dir2;
+        assert_eq!(dir2, copied2);
     }
 
     #[test]

@@ -36,17 +36,14 @@ mod theme_mode_tests {
     }
 
     #[test]
-    fn test_clone() {
-        let mode = ThemeMode::Light;
-        let cloned = mode.clone();
-        assert_eq!(mode, cloned);
-    }
-
-    #[test]
     fn test_copy() {
-        let mode = ThemeMode::Dark;
-        let copied = mode;
+        let mode = ThemeMode::Light;
+        let copied = mode; // ThemeMode implements Copy
         assert_eq!(mode, copied);
+
+        let mode2 = ThemeMode::Dark;
+        let copied2 = mode2;
+        assert_eq!(mode2, copied2);
     }
 
     #[test]

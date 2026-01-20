@@ -87,11 +87,7 @@ mod directory_path_tests {
         let mode = parse_args(vec!["lala", "src"]);
         // Without extension, treated as directory when it exists as dir
         // If doesn't exist, still treated as directory
-        let expected = if PathBuf::from("src").is_dir() {
-            StartupMode::OpenDir(PathBuf::from("src"))
-        } else {
-            StartupMode::OpenDir(PathBuf::from("src"))
-        };
+        let expected = StartupMode::OpenDir(PathBuf::from("src"));
         assert_eq!(mode, expected);
     }
 

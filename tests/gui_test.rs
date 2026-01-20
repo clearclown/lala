@@ -5,7 +5,6 @@
 /// - RTL text detection and handling
 /// - Editor panel state management
 /// - Preview mode detection
-
 use lala::gui::{TextDirection, RtlText};
 
 // === RTL Text Detection Tests ===

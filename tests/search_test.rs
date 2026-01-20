@@ -322,7 +322,7 @@ mod regex_search_tests {
             whole_word: false,
         };
         let results = search_in_buffer(&buffer, r"^start", &options).unwrap();
-        assert!(results.len() >= 1); // At least matches line start
+        assert!(!results.is_empty()); // At least matches line start
     }
 }
 

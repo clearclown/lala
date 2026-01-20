@@ -170,7 +170,7 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
 
             // ========== 引用 (Blockquotes) ==========
             Event::Start(Tag::BlockQuote(_)) => {
-                in_blockquote = true;
+                let _in_blockquote = true; // Used for context tracking
                 ui.add_space(8.0);
                 let border_color = if ui.visuals().dark_mode {
                     egui::Color32::from_rgb(96, 165, 250)
@@ -191,21 +191,18 @@ fn render_events(ui: &mut egui::Ui, events: &[Event]) {
                     .show(ui, |ui| {
                         i += 1;
                         while i < events.len() && !matches!(events[i], Event::End(TagEnd::BlockQuote(_))) {
-                            match &events[i] {
-                                Event::Start(Tag::Paragraph) => {
+                            if let Event::Start(Tag::Paragraph) = &events[i] {
+                                i += 1;
+                                let text = extract_text_until_end(&events[i..], TagEnd::Paragraph);
+                                let quote_color = if ui.visuals().dark_mode {
+                                    egui::Color32::from_rgb(212, 212, 216)
+                                } else {
+                                    egui::Color32::from_rgb(55, 65, 81)
+                                };
+                                ui.label(egui::RichText::new(text).italics().color(quote_color));
+                                while i < events.len() && !matches!(events[i], Event::End(TagEnd::Paragraph)) {
                                     i += 1;
-                                    let text = extract_text_until_end(&events[i..], TagEnd::Paragraph);
-                                    let quote_color = if ui.visuals().dark_mode {
-                                        egui::Color32::from_rgb(212, 212, 216)
-                                    } else {
-                                        egui::Color32::from_rgb(55, 65, 81)
-                                    };
-                                    ui.label(egui::RichText::new(text).italics().color(quote_color));
-                                    while i < events.len() && !matches!(events[i], Event::End(TagEnd::Paragraph)) {
-                                        i += 1;
-                                    }
                                 }
-                                _ => {}
                             }
                             i += 1;
                         }

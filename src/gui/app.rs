@@ -328,7 +328,7 @@ impl LalaApp {
             self.llm_status = format!("File loaded ({} lines)", line_count);
         } else {
             eprintln!("Failed to read file: {:?}", path);
-            self.llm_status = format!("Error: Failed to read file");
+            self.llm_status = "Error: Failed to read file".to_string();
         }
     }
 

@@ -6,17 +6,12 @@
 use egui::{text::LayoutJob, Color32, FontId, TextFormat};
 
 /// Text direction
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TextDirection {
+    #[default]
     LeftToRight,
     RightToLeft,
     Mixed,
-}
-
-impl Default for TextDirection {
-    fn default() -> Self {
-        TextDirection::LeftToRight
-    }
 }
 
 /// Check if a character is RTL
